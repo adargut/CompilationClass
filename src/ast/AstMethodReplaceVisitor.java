@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class AstMethodReplaceVisitor implements Visitor {
-    private String methodName;
-    private Integer lineNumber;
-    private String newName;
-    private ArrayList<ClassDecl> relevantClasses = new ArrayList<ClassDecl>();
-    private HashMap<String, ClassDecl> classMap = new HashMap<String, ClassDecl>();
-    private HashMap<String, ClassDecl> variableMap = new HashMap<String, ClassDecl>();
+public class AstMethodReplaceVisitor implements Visitor { // todo rename this?
+    private String methodName; // todo perhaps make this final?
+    private Integer lineNumber; // todo same for this
+    private String newName;  // todo me too..
+    // todo maybe initialize all of these inside the constructor? not sure
+    private ArrayList<ClassDecl> relevantClasses = new ArrayList<>(); // todo this should be a set, not arraylist
+    private HashMap<String, ClassDecl> classMap = new HashMap<>();
+    private HashMap<String, ClassDecl> variableMap = new HashMap<>();
     private ClassDecl currentClass;
 
     public AstMethodReplaceVisitor(String methodName, Integer lineNumber, String newName) {
         this.methodName = methodName;
         this.lineNumber = lineNumber;
         this.newName = newName;
-
     }
 
     @Override
@@ -26,7 +26,6 @@ public class AstMethodReplaceVisitor implements Visitor {
             classdecl.accept(this);
         }
         program.mainClass().accept(this);
-
     }
 
     @Override
@@ -50,7 +49,6 @@ public class AstMethodReplaceVisitor implements Visitor {
         for (var methodDecl : classDecl.methoddecls()) {
             methodDecl.accept(this);
         }
-
     }
 
     @Override
@@ -121,7 +119,6 @@ public class AstMethodReplaceVisitor implements Visitor {
 
     @Override
     public void visit(AssignStatement assignStatement) {
-        int x = 3;
         assignStatement.rv().accept(this);
     }
 
