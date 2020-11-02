@@ -145,7 +145,7 @@ public class MethodCallRenameVisitor implements Visitor {
         }
 
         // Case New X().foo()
-        if (owner instanceof NewObjectExpr && relevantClasses.contains(((NewObjectExpr) owner).classId()) {
+        if (owner instanceof NewObjectExpr && relevantClasses.contains(((NewObjectExpr) owner).classId())) {
             e.setMethodId(this.newName);
         }
     }
