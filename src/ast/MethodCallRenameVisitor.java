@@ -8,7 +8,7 @@ public class MethodCallRenameVisitor implements Visitor {
     private final String newName;
     private final Set<String> relevantClasses; // todo get this from somewhere
     private Mapper variableMapper = new VariablesMapper();
-    private ClassDecl currentClass;
+    private String currentClass;
 
     public MethodCallRenameVisitor(String newName, Set<String> relevantClasses) {
         this.newName = newName;
@@ -25,7 +25,7 @@ public class MethodCallRenameVisitor implements Visitor {
 
     @Override
     public void visit(ClassDecl classDecl) {
-        currentClass = classDecl;
+        currentClass = classDecl.name();
         for (var methodDecl : classDecl.methoddecls()) {
             methodDecl.accept(this);
         }
