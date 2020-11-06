@@ -1,23 +1,30 @@
 package ast;
 
-import utils.Mapper;
-import utils.VariablesMapper;
-import java.util.Set;
+import symboltable.Class;
+import symboltable.SymbolTable;
+
+import java.util.ArrayList;
 
 public class MethodCallRenameVisitor implements Visitor {
     private final String newName;
-    private final Set<String> relevantClasses; // todo get this from somewhere
-    private Mapper variableMapper = new VariablesMapper();
-    private String currentClass;
+    private final String oldName;
+    private final SymbolTable symbolTable;
+    private final ArrayList<Class> relevantClasses; // todo optimize to set somewhen
+    private Class currentClass;
 
-    public MethodCallRenameVisitor(String newName, Set<String> relevantClasses) {
+    public MethodCallRenameVisitor(String newName, SymbolTable symbolTable, String oldName, int oldMethodLine) {
         this.newName = newName;
-        this.relevantClasses = relevantClasses;
+        this.oldName = oldName;
+        this.symbolTable = symbolTable;
+        this.relevantClasses = symbolTable.getAllRelevantClasses(oldName, oldMethodLine);
     }
 
     @Override
     public void visit(Program program) {
-        variableMapper.resetMapping();
+        // Visit main class
+        program.mainClass().accept(this);
+
+        // Visit other classes
         for (var classdecl : program.classDecls()) {
             classdecl.accept(this);
         }
@@ -25,15 +32,18 @@ public class MethodCallRenameVisitor implements Visitor {
 
     @Override
     public void visit(ClassDecl classDecl) {
-        currentClass = classDecl.name();
+        this.currentClass = this.symbolTable.getClass(classDecl.name());
         for (var methodDecl : classDecl.methoddecls()) {
             methodDecl.accept(this);
         }
+        this.currentClass = null;
     }
 
     @Override
     public void visit(MainClass mainClass) {
+        this.currentClass = this.symbolTable.getClass(mainClass.name());
         mainClass.mainStatement().accept(this);
+        this.currentClass = null;
     }
 
     @Override
@@ -48,8 +58,7 @@ public class MethodCallRenameVisitor implements Visitor {
 
     @Override
     public void visit(VarDecl varDecl) {
-        // todo check if this should be tostring?
-        variableMapper.createMapping(varDecl.name(), varDecl.type().toString());
+
     }
 
     @Override
@@ -133,6 +142,7 @@ public class MethodCallRenameVisitor implements Visitor {
     public void visit(MethodCallExpr e) {
         // todo change this at the end to change after traversal
         var owner = e.ownerExpr();
+        if (!e.methodId().equals(this.oldName)) return;
 
         // Case this.foo()
         if (e.ownerExpr() instanceof ThisExpr && relevantClasses.contains(currentClass)) {
@@ -140,13 +150,17 @@ public class MethodCallRenameVisitor implements Visitor {
         }
 
         // Case x.foo()
-        if (owner instanceof IdentifierExpr && relevantClasses.contains(((IdentifierExpr) owner).id())) {
-            e.setMethodId(this.newName);
+        if (owner instanceof IdentifierExpr) {
+            String className = ((IdentifierExpr) owner).id();
+            var staticType = symbolTable.getClass(className);
+            if (staticType != null && relevantClasses.contains(staticType)) e.setMethodId(this.newName);
         }
 
         // Case New X().foo()
-        if (owner instanceof NewObjectExpr && relevantClasses.contains(((NewObjectExpr) owner).classId())) {
-            e.setMethodId(this.newName);
+        if (owner instanceof NewObjectExpr) {
+            String className = ((NewObjectExpr) owner).classId();
+            var staticType = symbolTable.getClass(className);
+            if (staticType != null && relevantClasses.contains(staticType)) e.setMethodId(this.newName);
         }
     }
 
