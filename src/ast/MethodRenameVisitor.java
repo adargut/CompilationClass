@@ -5,17 +5,23 @@ import symboltable.SymbolTable;
 
 import java.util.ArrayList;
 
-public class MethodCallRenameVisitor implements Visitor {
+public class MethodRenameVisitor implements Visitor {
     private final String newName;
     private final String oldName;
     private final SymbolTable symbolTable;
     private final ArrayList<Class> relevantClasses; // todo optimize to set somewhen
+    private final ArrayList<MethodDecl> relevantMethodDeclarations; // todo make this method not methoddecl
     private Class currentClass;
 
-    public MethodCallRenameVisitor(String newName, SymbolTable symbolTable, String oldName, int oldMethodLine) {
+    public MethodRenameVisitor(String newName,
+                               SymbolTable symbolTable,
+                               String oldName,
+                               int oldMethodLine,
+                               ArrayList<MethodDecl> relevantMethodDeclarations) {
         this.newName = newName;
         this.oldName = oldName;
         this.symbolTable = symbolTable;
+        this.relevantMethodDeclarations = symbolTable.getAllMethodsDeclarations(oldName, oldMethodLine);
         this.relevantClasses = symbolTable.getAllRelevantClasses(oldName, oldMethodLine);
     }
 
@@ -48,7 +54,22 @@ public class MethodCallRenameVisitor implements Visitor {
 
     @Override
     public void visit(MethodDecl methodDecl) {
+        if (relevantMethodDeclarations.contains(methodDecl)) {
+            methodDecl.setName(this.newName);
+        }
+        for (var formal : methodDecl.formals()) {
+            formal.accept(this);
+        }
 
+        for (var varDecl : methodDecl.vardecls()) {
+            varDecl.accept(this);
+        }
+
+        for (var stmt : methodDecl.body()) {
+            stmt.accept(this);
+        }
+
+        methodDecl.ret().accept(this);
     }
 
     @Override
