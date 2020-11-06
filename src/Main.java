@@ -1,4 +1,7 @@
 import ast.*;
+import symboltable.Class;
+import symboltable.SymbolTable;
+import utils.*;
 
 import java.io.*;
 
@@ -54,11 +57,23 @@ public class Main {
                         throw new IllegalArgumentException("unknown rename type " + type);
                     }
 
-                    AstMethodReplaceVisitor astReplace = new AstMethodReplaceVisitor(originalName, originalLine, newName);
-                    astReplace.visit(prog);
+                    BuildClassHierarchyVisitor buildClassHierarchyVisitor = new BuildClassHierarchyVisitor();
+                    buildClassHierarchyVisitor.visit(prog);
+
+                    SymbolTable symbolTable = buildClassHierarchyVisitor.getSymbolTable();
+
+                    MethodRenameVisitor methodRenameVisitor = new MethodRenameVisitor(newName, symbolTable, originalName, originalLine);
+                    methodRenameVisitor.visit(prog);
 
                     AstXMLSerializer xmlSerializer = new AstXMLSerializer();
                     xmlSerializer.serialize(prog, outfilename);
+
+                    AstPrintVisitor astPrinter = new AstPrintVisitor();
+                    astPrinter.visit(prog);
+                    var outFile2 = new PrintWriter(outfilename + ".java");
+                    outFile2.write(astPrinter.getString());
+                    outFile2.flush();
+                    outFile2.close();
 
 
                 } else {

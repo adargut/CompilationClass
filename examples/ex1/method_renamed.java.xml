@@ -12,7 +12,7 @@
 <classId>Example</classId>
                             </new-object>
                         </ownerExpr>
-                        <methodId>run</methodId>
+                        <methodId>flee</methodId>
                         <actuals/>
                     </call>
                 </arg>
@@ -59,7 +59,7 @@
     <id>e</id>
 </ref-id>
                             </ownerExpr>
-                            <methodId>run</methodId>
+                            <methodId>flee</methodId>
                             <actuals/>
                         </call>
                     </ret>

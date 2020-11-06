@@ -100,10 +100,8 @@ public class SymbolTable {
             );
         }
 
-        // Add the original declaration to the list
-        methodDeclarations.add(classScope.getMethod(methodName).getMethodDecl());
-
         TreeNode<Class> currentClassNode = classScope.getNode().getParent();
+        TreeNode<Class> oldestValidParent = classScope.getNode();
 
         // Traverse up the tree
         while (!currentClassNode.equals(this.classHierarchy.getRoot())) {
@@ -112,12 +110,14 @@ public class SymbolTable {
             if (method != null) {
                 // Parent class contains a declaration of the method (the current method is overriding it)
                 // Add the declaration to the list
-                methodDeclarations.add(method.getMethodDecl());
+                oldestValidParent = currentClassNode;
             }
+
+            currentClassNode = currentClassNode.getParent();
         }
 
         // Traverse down the tree (search method declarations in all children)
-        getAllMethodDeclarationsDownwards(methodName, currentClassNode, methodDeclarations);
+        getAllMethodDeclarationsDownwards(methodName, oldestValidParent, methodDeclarations);
         return methodDeclarations;
     }
 
@@ -151,18 +151,24 @@ public class SymbolTable {
             );
         }
 
-        // Add the class declaration to the list
-        relevantClasses.add(classScope);
-
         TreeNode<Class> currentClassNode = classScope.getNode().getParent();
+        TreeNode<Class> oldestValidParent = classScope.getNode();
 
         // Traverse up the tree
         while (!currentClassNode.equals(this.classHierarchy.getRoot())) {
-            relevantClasses.add(classScope);
+            Method method = currentClassNode.getData().getMethod(methodName);
+
+            if (method != null) {
+                // Parent class contains a declaration of the method (the current method is overriding it)
+                // Add the declaration to the list
+                oldestValidParent = currentClassNode;
+            }
+
+            currentClassNode = currentClassNode.getParent();
         }
 
-        // Traverse down the tree
-        getAllRelevantClassesDownwards(currentClassNode, relevantClasses);
+        // Traverse down the tree (search method declarations in all children)
+        getAllRelevantClassesDownwards(oldestValidParent, relevantClasses);
         return relevantClasses;
     }
 
@@ -215,5 +221,41 @@ public class SymbolTable {
         for (TreeNode<Class> child : currentClassNode.getChildren()) {
             getAllRelevantClassNamesDownwards(child, relevantClassNames);
         }
+    }
+
+    public Variable getVar(Method methodScope, String symbol) {
+        Variable variable = methodScope.getParam(symbol);
+
+        // If we found the symbol in params - return it
+        if (variable != null) {
+            return variable;
+        }
+
+        // Search symbol in var declarations (method scope)
+        variable = methodScope.getVar(symbol);
+
+        if (variable != null) {
+            return variable;
+        }
+
+        // Traverse up in class fields until root is reached
+        return getVar(methodScope.getParentClass(), symbol);
+
+
+    }
+
+    public Variable getVar(Class classScope, String symbol) {
+        if (classScope.equals(this.classHierarchy.getRoot().getData())) {
+            // Reached top
+            return null;
+        }
+        Variable variable = classScope.getVar(symbol);
+
+        if (variable != null) {
+            return variable;
+        }
+
+        return getVar(classScope.getNode().getParent().getData(), symbol);
+
     }
 }

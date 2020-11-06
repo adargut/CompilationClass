@@ -11,21 +11,27 @@ public class Method {
     private String name;
     private Integer lineNumber;
     private MethodDecl methodDecl;
+    private Class parentClass;
     private final HashMap<String, Variable> params;
     private final HashMap<String, Variable> variables;
     private final ArrayList<MethodCallExpr> calls;
 
-    public Method(String name, Integer lineNumber) {
+    public Method(String name, Integer lineNumber, Class parentClass) {
         this.name = name;
         this.lineNumber = lineNumber;
+        this.parentClass = parentClass;
         this.variables = new HashMap<String, Variable>();
         this.params = new HashMap<String, Variable>();
         this.calls = new ArrayList<MethodCallExpr>();
     }
 
-    public Method(String name, Integer lineNumber, MethodDecl methodDecl) {
-        this(name, lineNumber);
+    public Method(String name, Integer lineNumber, Class parentClass, MethodDecl methodDecl) {
+        this(name, lineNumber, parentClass);
         this.methodDecl = methodDecl;
+    }
+
+    public Class getParentClass() {
+        return parentClass;
     }
 
     public MethodDecl getMethodDecl() {

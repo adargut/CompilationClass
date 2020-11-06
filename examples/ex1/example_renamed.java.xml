@@ -9,10 +9,10 @@
                     <call>
                         <ownerExpr>
                             <new-object>
-<classId>Trivial</classId>
+<classId>Trivial2</classId>
                             </new-object>
                         </ownerExpr>
-                        <methodId>flee</methodId>
+                        <methodId>Start</methodId>
                         <actuals>
                             <actual>
 <int-literal>
@@ -43,11 +43,11 @@
             </fields>
             <methoddecls>
                 <methoddecl>
-                    <lineNumber>12</lineNumber>
+                    <lineNumber>55</lineNumber>
                     <returnType>
                         <int/>
                     </returnType>
-                    <name>flee</name>
+                    <name>Start2</name>
                     <formals>
                         <formal>
                             <type>
@@ -113,11 +113,10 @@
         </classdecl>
         <classdecl>
             <name>Simple</name>
-            <superName>Trivial</superName>
             <fields/>
             <methoddecls>
                 <methoddecl>
-                    <lineNumber>13</lineNumber>
+                    <lineNumber>42</lineNumber>
                     <returnType>
                         <int/>
                     </returnType>
@@ -198,11 +197,11 @@
             </fields>
             <methoddecls>
                 <methoddecl>
-                    <lineNumber>12</lineNumber>
+                    <lineNumber>78</lineNumber>
                     <returnType>
                         <int/>
                     </returnType>
-                    <name>flee</name>
+                    <name>Start</name>
                     <formals>
                         <formal>
                             <type>
@@ -274,16 +273,16 @@
                     <type>
                         <int/>
                     </type>
-                    <name>f</name>
+                    <name>x</name>
                 </field>
             </fields>
             <methoddecls>
                 <methoddecl>
-                    <lineNumber>12</lineNumber>
+                    <lineNumber>29</lineNumber>
                     <returnType>
                         <int/>
                     </returnType>
-                    <name>flee</name>
+                    <name>Start</name>
                     <formals>
                         <formal>
                             <type>
@@ -303,6 +302,81 @@
                             <type>
 <ref>
     <id>Simple</id>
+</ref>
+                            </type>
+                            <name>x</name>
+                        </vardecl>
+                        <vardecl>
+                            <type>
+<int/>
+                            </type>
+                            <name>y</name>
+                        </vardecl>
+                    </vardecls>
+                    <body>
+                        <assign>
+                            <lv>x</lv>
+                            <rv>
+<ref-id>
+    <id>a</id>
+</ref-id>
+                            </rv>
+                        </assign>
+                        <assign>
+                            <lv>y</lv>
+                            <rv>
+<add>
+    <e1>
+        <ref-id>
+            <id>b</id>
+        </ref-id>
+    </e1>
+    <e2>
+        <int-literal>
+            <num>4</num>
+        </int-literal>
+    </e2>
+</add>
+                            </rv>
+                        </assign>
+                    </body>
+                    <ret>
+                        <call>
+                            <ownerExpr>
+<ref-id>
+    <id>x</id>
+</ref-id>
+                            </ownerExpr>
+                            <methodId>flee</methodId>
+                            <actuals/>
+                        </call>
+                    </ret>
+                </methoddecl>
+                <methoddecl>
+                    <lineNumber>29</lineNumber>
+                    <returnType>
+                        <int/>
+                    </returnType>
+                    <name>Start3</name>
+                    <formals>
+                        <formal>
+                            <type>
+<int/>
+                            </type>
+                            <name>a</name>
+                        </formal>
+                        <formal>
+                            <type>
+<int/>
+                            </type>
+                            <name>b</name>
+                        </formal>
+                    </formals>
+                    <vardecls>
+                        <vardecl>
+                            <type>
+<ref>
+    <id>Trivial2</id>
 </ref>
                             </type>
                             <name>x</name>
@@ -372,7 +446,74 @@
                     <returnType>
                         <int/>
                     </returnType>
-                    <name>flee</name>
+                    <name>Start</name>
+                    <formals>
+                        <formal>
+                            <type>
+<int/>
+                            </type>
+                            <name>a</name>
+                        </formal>
+                        <formal>
+                            <type>
+<int/>
+                            </type>
+                            <name>b</name>
+                        </formal>
+                    </formals>
+                    <vardecls>
+                        <vardecl>
+                            <type>
+<int/>
+                            </type>
+                            <name>x</name>
+                        </vardecl>
+                        <vardecl>
+                            <type>
+<int/>
+                            </type>
+                            <name>y</name>
+                        </vardecl>
+                    </vardecls>
+                    <body>
+                        <assign>
+                            <lv>x</lv>
+                            <rv>
+<ref-id>
+    <id>a</id>
+</ref-id>
+                            </rv>
+                        </assign>
+                        <assign>
+                            <lv>y</lv>
+                            <rv>
+<add>
+    <e1>
+        <ref-id>
+            <id>b</id>
+        </ref-id>
+    </e1>
+    <e2>
+        <int-literal>
+            <num>4</num>
+        </int-literal>
+    </e2>
+</add>
+                            </rv>
+                        </assign>
+                    </body>
+                    <ret>
+                        <int-literal>
+                            <num>0</num>
+                        </int-literal>
+                    </ret>
+                </methoddecl>
+                <methoddecl>
+                    <lineNumber>99</lineNumber>
+                    <returnType>
+                        <int/>
+                    </returnType>
+                    <name>Start2</name>
                     <formals>
                         <formal>
                             <type>

@@ -60,7 +60,7 @@ public class BuildClassHierarchyVisitor implements Visitor {
         }
 
         this.currentClass = this.symbolTable.getClass(mainClass.name());
-        this.currentMethod = new Method("main", null);
+        this.currentMethod = new Method("main", null, this.symbolTable.classHierarchy.getRoot().getData());
         this.currentClass.addMethod(this.currentMethod);
         this.currentMethod.addParam(new Variable(mainClass.argsName(), new IntArrayAstType(), null));
         mainClass.mainStatement().accept(this);
@@ -75,7 +75,7 @@ public class BuildClassHierarchyVisitor implements Visitor {
         }
 
         // Add method to its class
-        this.currentMethod = new Method(methodDecl.name(), methodDecl.lineNumber, methodDecl);
+        this.currentMethod = new Method(methodDecl.name(), methodDecl.lineNumber, this.currentClass, methodDecl);
 
         if (!this.currentClass.addMethod(this.currentMethod)) {
             // Duplicate

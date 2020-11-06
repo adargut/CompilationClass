@@ -1,7 +1,9 @@
 package ast;
 
 import symboltable.Class;
+import symboltable.Method;
 import symboltable.SymbolTable;
+import symboltable.Variable;
 
 import java.util.ArrayList;
 
@@ -12,6 +14,7 @@ public class MethodRenameVisitor implements Visitor {
     private final ArrayList<Class> relevantClasses; // todo optimize to set somewhen
     private final ArrayList<MethodDecl> relevantMethodDeclarations; // todo make this method not methoddecl
     private Class currentClass;
+    private Method currentMethod;
 
     public MethodRenameVisitor(String newName,
                                SymbolTable symbolTable,
@@ -47,12 +50,16 @@ public class MethodRenameVisitor implements Visitor {
     @Override
     public void visit(MainClass mainClass) {
         this.currentClass = this.symbolTable.getClass(mainClass.name());
+        this.currentMethod = this.currentClass.getMethod("main");
         mainClass.mainStatement().accept(this);
+        this.currentMethod = null;
         this.currentClass = null;
     }
 
     @Override
     public void visit(MethodDecl methodDecl) {
+        this.currentMethod = this.currentClass.getMethod(methodDecl.name());
+
         if (relevantMethodDeclarations.contains(methodDecl)) {
             methodDecl.setName(this.newName);
         }
@@ -69,6 +76,8 @@ public class MethodRenameVisitor implements Visitor {
         }
 
         methodDecl.ret().accept(this);
+
+        this.currentMethod = null;
     }
 
     @Override
@@ -171,9 +180,31 @@ public class MethodRenameVisitor implements Visitor {
 
         // Case x.foo()
         if (owner instanceof IdentifierExpr) {
-            String className = ((IdentifierExpr) owner).id();
-            var staticType = symbolTable.getClass(className);
-            if (staticType != null && relevantClasses.contains(staticType)) e.setMethodId(this.newName);
+            String symbol = ((IdentifierExpr) owner).id();
+
+            Variable variable;
+
+            // Search for symbol upwards in symbol table to get type of the variable
+            if (this.currentMethod == null) {
+                // Global scope
+                variable = this.symbolTable.getVar(this.currentClass, symbol);
+            }
+            else {
+                // Local scope (method scope)
+                variable = this.symbolTable.getVar(this.currentMethod, symbol);
+            }
+
+            if (variable == null) {
+                throw new RuntimeException(String.format("Variable with name %s was not declared in current scope!", symbol));
+            }
+
+            var varType = variable.getType();
+
+            if (varType instanceof RefType) {
+                String className = ((RefType) varType).id();
+                var staticType = symbolTable.getClass(className);
+                if (staticType != null && relevantClasses.contains(staticType)) e.setMethodId(this.newName);
+            }
         }
 
         // Case New X().foo()
