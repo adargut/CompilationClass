@@ -16,8 +16,7 @@ public class MethodRenameVisitor implements Visitor {
     public MethodRenameVisitor(String newName,
                                SymbolTable symbolTable,
                                String oldName,
-                               int oldMethodLine,
-                               ArrayList<MethodDecl> relevantMethodDeclarations) {
+                               int oldMethodLine) {
         this.newName = newName;
         this.oldName = oldName;
         this.symbolTable = symbolTable;
