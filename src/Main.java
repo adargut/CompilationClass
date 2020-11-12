@@ -1,7 +1,9 @@
 import ast.*;
-import symboltable.Class;
 import symboltable.SymbolTable;
-import utils.*;
+import visitor.AstPrintVisitor;
+import visitor.BuildClassHierarchyVisitor;
+import visitor.MethodRenameVisitor;
+import visitor.VariableRenameVisitor;
 
 import java.io.*;
 
@@ -62,8 +64,14 @@ public class Main {
 
                     SymbolTable symbolTable = buildClassHierarchyVisitor.getSymbolTable();
 
-                    MethodRenameVisitor methodRenameVisitor = new MethodRenameVisitor(newName, symbolTable, originalName, originalLine);
-                    methodRenameVisitor.visit(prog);
+                    if (isMethod) {
+                        MethodRenameVisitor methodRenameVisitor = new MethodRenameVisitor(newName, symbolTable, originalName, originalLine);
+                        methodRenameVisitor.visit(prog);
+                    }
+                    else {
+                        VariableRenameVisitor variableRenameVisitor = new VariableRenameVisitor(newName, symbolTable, originalName, originalLine);
+                        variableRenameVisitor.visit(prog);
+                    }
 
                     AstXMLSerializer xmlSerializer = new AstXMLSerializer();
                     xmlSerializer.serialize(prog, outfilename);

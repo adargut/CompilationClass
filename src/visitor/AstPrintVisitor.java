@@ -1,4 +1,6 @@
-package ast;
+package visitor;
+
+import ast.*;
 
 public class AstPrintVisitor implements Visitor {
     private StringBuilder builder = new StringBuilder();

@@ -73,6 +73,41 @@ public class SymbolTable {
 
     }
 
+    public Variable getVarByNameAndLine(String varName, Integer lineNumber) {
+        Variable var;
+        for (Map.Entry mapElement : this.classes.entrySet()) {
+            String className = (String) mapElement.getKey();
+            Class currentClass = ((Class) mapElement.getValue());
+
+            for (Method method: currentClass.getMethods().values()) {
+                // Search in params
+                var = method.getParam(varName);
+
+                if (var != null && var.getLineNumber() != null && var.getLineNumber().equals(lineNumber)) {
+                    return var;
+                }
+
+                // Search in variables
+                var = method.getVar(varName);
+
+                if (var != null && var.getLineNumber() != null && var.getLineNumber().equals(lineNumber)) {
+                    return var;
+                }
+
+            }
+
+            // Search in fields
+            var = currentClass.getVar(varName);
+
+            if (var != null && var.getLineNumber() != null && var.getLineNumber().equals(lineNumber)) {
+                return var;
+            }
+
+        }
+
+        return null;
+    }
+
     public Class getClassOfMethod(String methodName, Integer lineNumber) {
         for (Map.Entry mapElement : this.classes.entrySet()) {
             String className = (String) mapElement.getKey();

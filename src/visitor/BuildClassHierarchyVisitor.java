@@ -1,5 +1,6 @@
-package ast;
+package visitor;
 
+import ast.*;
 import symboltable.Method;
 import symboltable.SymbolTable;
 import symboltable.Variable;

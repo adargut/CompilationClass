@@ -1,5 +1,6 @@
-package ast;
+package visitor;
 
+import ast.*;
 import symboltable.Class;
 import symboltable.Method;
 import symboltable.SymbolTable;
@@ -7,24 +8,20 @@ import symboltable.Variable;
 
 import java.util.ArrayList;
 
-public class MethodRenameVisitor implements Visitor {
+public class VariableRenameVisitor implements Visitor {
     private final String newName;
-    private final String oldName;
     private final SymbolTable symbolTable;
-    private final ArrayList<Class> relevantClasses; // todo optimize to set somewhen
-    private final ArrayList<MethodDecl> relevantMethodDeclarations; // todo make this method not methoddecl
+    private final Variable variableToReplace;
     private Class currentClass;
     private Method currentMethod;
 
-    public MethodRenameVisitor(String newName,
-                               SymbolTable symbolTable,
-                               String oldName,
-                               int oldMethodLine) {
+    public VariableRenameVisitor(String newName,
+                                 SymbolTable symbolTable,
+                                 String oldName,
+                                 int oldMethodLine) {
         this.newName = newName;
-        this.oldName = oldName;
         this.symbolTable = symbolTable;
-        this.relevantMethodDeclarations = symbolTable.getAllMethodsDeclarations(oldName, oldMethodLine);
-        this.relevantClasses = symbolTable.getAllRelevantClasses(oldName, oldMethodLine);
+        this.variableToReplace = symbolTable.getVarByNameAndLine(oldName, oldMethodLine);
     }
 
     @Override
@@ -41,9 +38,14 @@ public class MethodRenameVisitor implements Visitor {
     @Override
     public void visit(ClassDecl classDecl) {
         this.currentClass = this.symbolTable.getClass(classDecl.name());
+
+        for (var fieldDecl : classDecl.fields()) {
+            fieldDecl.accept(this);
+        }
         for (var methodDecl : classDecl.methoddecls()) {
             methodDecl.accept(this);
         }
+
         this.currentClass = null;
     }
 
@@ -60,9 +62,6 @@ public class MethodRenameVisitor implements Visitor {
     public void visit(MethodDecl methodDecl) {
         this.currentMethod = this.currentClass.getMethod(methodDecl.name());
 
-        if (relevantMethodDeclarations.contains(methodDecl)) {
-            methodDecl.setName(this.newName);
-        }
         for (var formal : methodDecl.formals()) {
             formal.accept(this);
         }
@@ -82,12 +81,54 @@ public class MethodRenameVisitor implements Visitor {
 
     @Override
     public void visit(FormalArg formalArg) {
+        formalArg.type().accept(this);
+
+        Variable variable;
+
+        // Search for symbol upwards in symbol table to get type of the variable
+        if (this.currentMethod == null) {
+            // Global scope
+            variable = this.symbolTable.getVar(this.currentClass, formalArg.name());
+        }
+        else {
+            // Local scope (method scope)
+            variable = this.symbolTable.getVar(this.currentMethod, formalArg.name());
+        }
+
+        if (variable == null) {
+            throw new RuntimeException(String.format("Variable with name %s was not declared in current scope!", formalArg.name()));
+        }
+
+        if (variable.equals(this.variableToReplace)) {
+            formalArg.setName(this.newName);
+        }
+
 
     }
 
     @Override
     public void visit(VarDecl varDecl) {
+        varDecl.type().accept(this);
 
+        Variable variable;
+
+        // Search for symbol upwards in symbol table to get type of the variable
+        if (this.currentMethod == null) {
+            // Global scope
+            variable = this.symbolTable.getVar(this.currentClass, varDecl.name());
+        }
+        else {
+            // Local scope (method scope)
+            variable = this.symbolTable.getVar(this.currentMethod, varDecl.name());
+        }
+
+        if (variable == null) {
+            throw new RuntimeException(String.format("Variable with name %s was not declared in current scope!", varDecl.name()));
+        }
+
+        if (variable.equals(this.variableToReplace)) {
+            varDecl.setName(this.newName);
+        }
     }
 
     @Override
@@ -117,6 +158,26 @@ public class MethodRenameVisitor implements Visitor {
 
     @Override
     public void visit(AssignStatement assignStatement) {
+        Variable variable;
+
+        // Search for symbol upwards in symbol table to get type of the variable
+        if (this.currentMethod == null) {
+            // Global scope
+            variable = this.symbolTable.getVar(this.currentClass, assignStatement.lv());
+        }
+        else {
+            // Local scope (method scope)
+            variable = this.symbolTable.getVar(this.currentMethod, assignStatement.lv());
+        }
+
+        if (variable == null) {
+            throw new RuntimeException(String.format("Variable with name %s was not declared in current scope!", assignStatement.lv()));
+        }
+
+        if (variable.equals(this.variableToReplace)) {
+            assignStatement.setLv(this.newName);
+        }
+
         assignStatement.rv().accept(this);
     }
 
@@ -159,7 +220,7 @@ public class MethodRenameVisitor implements Visitor {
     @Override
     public void visit(ArrayAccessExpr e) {
         e.indexExpr().accept(this);
-        e.arrayExpr().accept(this); // todo is this needed?
+        e.arrayExpr().accept(this);
     }
 
     @Override
@@ -169,49 +230,10 @@ public class MethodRenameVisitor implements Visitor {
 
     @Override
     public void visit(MethodCallExpr e) {
-        // todo change this at the end to change after traversal
-        var owner = e.ownerExpr();
-        if (!e.methodId().equals(this.oldName)) return;
+        e.ownerExpr().accept(this);
 
-        // Case this.foo()
-        if (e.ownerExpr() instanceof ThisExpr && relevantClasses.contains(currentClass)) {
-            e.setMethodId(this.newName);
-        }
-
-        // Case x.foo()
-        if (owner instanceof IdentifierExpr) {
-            String symbol = ((IdentifierExpr) owner).id();
-
-            Variable variable;
-
-            // Search for symbol upwards in symbol table to get type of the variable
-            if (this.currentMethod == null) {
-                // Global scope
-                variable = this.symbolTable.getVar(this.currentClass, symbol);
-            }
-            else {
-                // Local scope (method scope)
-                variable = this.symbolTable.getVar(this.currentMethod, symbol);
-            }
-
-            if (variable == null) {
-                throw new RuntimeException(String.format("Variable with name %s was not declared in current scope!", symbol));
-            }
-
-            var varType = variable.getType();
-
-            if (varType instanceof RefType) {
-                String className = ((RefType) varType).id();
-                var staticType = symbolTable.getClass(className);
-                if (staticType != null && relevantClasses.contains(staticType)) e.setMethodId(this.newName);
-            }
-        }
-
-        // Case New X().foo()
-        if (owner instanceof NewObjectExpr) {
-            String className = ((NewObjectExpr) owner).classId();
-            var staticType = symbolTable.getClass(className);
-            if (staticType != null && relevantClasses.contains(staticType)) e.setMethodId(this.newName);
+        for (Expr arg : e.actuals()) {
+            arg.accept(this);
         }
     }
 
@@ -232,7 +254,25 @@ public class MethodRenameVisitor implements Visitor {
 
     @Override
     public void visit(IdentifierExpr e) {
+        Variable variable;
 
+        // Search for symbol upwards in symbol table to get type of the variable
+        if (this.currentMethod == null) {
+            // Global scope
+            variable = this.symbolTable.getVar(this.currentClass, e.id());
+        }
+        else {
+            // Local scope (method scope)
+            variable = this.symbolTable.getVar(this.currentMethod, e.id());
+        }
+
+        if (variable == null) {
+            throw new RuntimeException(String.format("Variable with name %s was not declared in current scope!", e.id()));
+        }
+
+        if (variable.equals(this.variableToReplace)) {
+            e.setId(this.newName);
+        }
     }
 
     @Override
