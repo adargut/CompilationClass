@@ -148,7 +148,7 @@
 							<lv>x</lv>
 							<rv>
 								<ref-id>
-									<id>a</id>
+									<id>f</id>
 								</ref-id>
 							</rv>
 						</assign>
@@ -193,7 +193,7 @@
 							<type>
 								<int/>
 							</type>
-							<name>a</name>
+							<name>f</name>
 						</formal>
 						<formal>
 							<type>
@@ -221,7 +221,7 @@
 							<lv>x</lv>
 							<rv>
 								<ref-id>
-									<id>a</id>
+									<id>f</id>
 								</ref-id>
 							</rv>
 						</assign>
@@ -256,6 +256,7 @@
 			<superName>Trivial</superName>
 			<fields>
 				<field>
+					<lineNumber>145</lineNumber>
 					<type>
 						<int/>
 					</type>
@@ -312,7 +313,7 @@
 								<add>
 									<e1>
 										<ref-id>
-											<id>b</id>
+											<id>f</id>
 										</ref-id>
 									</e1>
 									<e2>
@@ -500,12 +501,6 @@
 			<name>Trivial4</name>
 			<superName>Trivial2</superName>
 			<fields>
-				<field>
-					<type>
-						<int/>
-					</type>
-					<name>f</name>
-				</field>
 			</fields>
 			<methoddecls>
 				<methoddecl>
@@ -600,7 +595,7 @@
 							<type>
 								<int/>
 							</type>
-							<name>x</name>
+							<name>f</name>
 						</vardecl>
 						<vardecl>
 							<type>
@@ -611,7 +606,7 @@
 					</vardecls>
 					<body>
 						<assign>
-							<lv>x</lv>
+							<lv>f</lv>
 							<rv>
 								<ref-id>
 									<id>a</id>
@@ -624,7 +619,7 @@
 								<add>
 									<e1>
 										<ref-id>
-											<id>b</id>
+											<id>f</id>
 										</ref-id>
 									</e1>
 									<e2>

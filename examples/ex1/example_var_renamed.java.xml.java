@@ -1,6 +1,6 @@
 class Main {
 	public static void main(String[] args) {
-		System.out.println((new Trivial2()).flee(1, 2));
+		System.out.println((new Trivial2()).Start(1, 2));
 	}
 }
 
@@ -31,7 +31,7 @@ class Simple {
 class Trivial2 extends Trivial {
 	int f;
 
-	int flee(int a, int b) {
+	int Start(int a, int b) {
 		int x;
 		int y;
 		x = a;
@@ -57,13 +57,13 @@ class Trivial3 extends Trivial {
 		int y;
 		x = a;
 		y = (b) + (4);
-		return (x).flee();
+		return (x).Start();
 	}
 
 }
 
 class Trivial4 extends Trivial2 {
-	int flee(int a, int b) {
+	int Start(int a, int b) {
 		int x;
 		int y;
 		x = a;

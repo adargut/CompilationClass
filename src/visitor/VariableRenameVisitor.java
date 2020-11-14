@@ -22,6 +22,10 @@ public class VariableRenameVisitor implements Visitor {
         this.newName = newName;
         this.symbolTable = symbolTable;
         this.variableToReplace = symbolTable.getVarByNameAndLine(oldName, oldMethodLine);
+
+        if (this.variableToReplace == null) {
+            throw new RuntimeException(String.format("Variable %S at line %d was not found!", oldName, oldMethodLine));
+        }
     }
 
     @Override
@@ -183,6 +187,26 @@ public class VariableRenameVisitor implements Visitor {
 
     @Override
     public void visit(AssignArrayStatement assignArrayStatement) {
+        Variable variable;
+
+        // Search for symbol upwards in symbol table to get type of the variable
+        if (this.currentMethod == null) {
+            // Global scope
+            variable = this.symbolTable.getVar(this.currentClass, assignArrayStatement.lv());
+        }
+        else {
+            // Local scope (method scope)
+            variable = this.symbolTable.getVar(this.currentMethod, assignArrayStatement.lv());
+        }
+
+        if (variable == null) {
+            throw new RuntimeException(String.format("Variable with name %s was not declared in current scope!", assignArrayStatement.lv()));
+        }
+
+        if (variable.equals(this.variableToReplace)) {
+            assignArrayStatement.setLv(this.newName);
+        }
+
         assignArrayStatement.index().accept(this);
         assignArrayStatement.rv().accept(this);
     }
@@ -282,17 +306,16 @@ public class VariableRenameVisitor implements Visitor {
 
     @Override
     public void visit(NewIntArrayExpr e) {
-
+        e.lengthExpr().accept(this);
     }
 
     @Override
     public void visit(NewObjectExpr e) {
-
     }
 
     @Override
     public void visit(NotExpr e) {
-
+        e.e().accept(this);
     }
 
     @Override

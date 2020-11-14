@@ -37,12 +37,12 @@
                             <type>
 <int/>
                             </type>
-                            <name>x</name>
+                            <name>y</name>
                         </vardecl>
                     </vardecls>
                     <body>
                         <assign>
-                            <lv>x</lv>
+                            <lv>y</lv>
                             <rv>
 <int-literal>
     <num>0</num>
@@ -54,12 +54,12 @@
                         <add>
                             <e1>
 <ref-id>
-    <id>x</id>
+    <id>y</id>
 </ref-id>
                             </e1>
                             <e2>
 <ref-id>
-    <id>x</id>
+    <id>y</id>
 </ref-id>
                             </e2>
                         </add>
