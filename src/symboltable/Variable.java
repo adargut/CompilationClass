@@ -19,7 +19,7 @@ public class Variable {
         return symbol;
     }
 
-    public void setSymbol(String name) {
+    public void setSymbol(String symbol) {
         this.symbol = symbol;
     }
 

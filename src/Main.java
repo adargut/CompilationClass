@@ -25,7 +25,6 @@ public class Main {
             } else {
                 throw new UnsupportedOperationException("unknown input method " + inputMethod);
             }
-
             var outFile = new PrintWriter(outfilename);
             try {
 

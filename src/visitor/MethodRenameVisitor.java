@@ -243,7 +243,7 @@ public class MethodRenameVisitor implements Visitor {
 
     @Override
     public void visit(NewIntArrayExpr e) {
-
+        e.lengthExpr().accept(this);
     }
 
     @Override
@@ -253,7 +253,7 @@ public class MethodRenameVisitor implements Visitor {
 
     @Override
     public void visit(NotExpr e) {
-
+        e.e().accept(this);
     }
 
     @Override
