@@ -20,6 +20,11 @@ public class BuildClassHierarchyVisitor implements Visitor {
         this.currentClass = null;
     }
 
+    private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
+        e.e1().accept(this);
+        e.e2().accept(this);
+    }
+
     @Override
     public void visit(Program program) {
         program.mainClass().accept(this);
@@ -270,11 +275,6 @@ public class BuildClassHierarchyVisitor implements Visitor {
 
     @Override
     public void visit(RefType t) {
-    }
-
-    private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
-        e.e1().accept(this);
-        e.e2().accept(this);
     }
 
 }

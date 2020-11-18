@@ -56,8 +56,8 @@ for path in $(ls examples/ex1/test_cases/variable_renaming/*_renamed*.xml); do
 done
 
 printf "\n\nFinishing up...  "
-#rm -rf temp_out
-#rm -rf temp_expected
-#rm -rf temp_actual
+rm -rf temp_out
+rm -rf temp_expected
+rm -rf temp_actual
 echo "Done!"
 
