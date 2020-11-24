@@ -12,7 +12,7 @@ public class Method {
     private Integer lineNumber;
     private MethodDecl methodDecl;
     private Class parentClass;
-    private final HashMap<String, Variable> params;
+    private final HashMap<String, Variable> params; // todo why is this a hashmap and not hashset (or array)?
     private final HashMap<String, Variable> variables;
     private final ArrayList<MethodCallExpr> calls;
 
