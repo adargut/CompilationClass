@@ -1,4 +1,4 @@
 package codegen;
 
-public class GenerateRet {
+public final class GenerateRet {
 }

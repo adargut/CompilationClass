@@ -1,4 +1,4 @@
 package codegen;
 
-public class GenerateDeclare {
+public final class GenerateDeclare {
 }

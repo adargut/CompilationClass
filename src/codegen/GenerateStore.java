@@ -1,4 +1,4 @@
 package codegen;
 
-public class GenerateStore {
+public final class GenerateStore {
 }
