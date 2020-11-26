@@ -1,5 +1,7 @@
 package ast;
 
+import visitor.Visitor;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlElements;
@@ -28,8 +30,8 @@ public class BlockStatement extends Statement {
     }
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public String accept(Visitor v) {
+        return v.visit(this);
     }
 
     public List<Statement> statements() {

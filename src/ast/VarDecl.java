@@ -1,5 +1,7 @@
 package ast;
 
+import visitor.Visitor;
+
 public class VarDecl extends VariableIntroduction {
 
     // for deserialization only!
@@ -12,7 +14,7 @@ public class VarDecl extends VariableIntroduction {
     }
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public String accept(Visitor v) {
+        return v.visit(this);
     }
 }

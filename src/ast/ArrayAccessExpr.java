@@ -1,5 +1,7 @@
 package ast;
 
+import visitor.Visitor;
+
 import javax.xml.bind.annotation.XmlElement;
 
 public class ArrayAccessExpr extends Expr {
@@ -18,8 +20,8 @@ public class ArrayAccessExpr extends Expr {
     }
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public String accept(Visitor v) {
+        return v.visit(this);
     }
 
     public Expr arrayExpr() {

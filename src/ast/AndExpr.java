@@ -1,5 +1,7 @@
 package ast;
 
+import visitor.Visitor;
+
 public class AndExpr extends BinaryExpr {
 
     // for deserialization only!
@@ -11,7 +13,7 @@ public class AndExpr extends BinaryExpr {
     }
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public String accept(Visitor v) {
+        return v.visit(this);
     }
 }

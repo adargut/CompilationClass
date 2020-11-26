@@ -1,5 +1,7 @@
 package ast;
 
+import visitor.Visitor;
+
 import javax.xml.bind.annotation.XmlElement;
 
 public class SysoutStatement extends Statement {
@@ -15,8 +17,8 @@ public class SysoutStatement extends Statement {
     }
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public String accept(Visitor v) {
+        return v.visit(this);
     }
 
     public Expr arg() {

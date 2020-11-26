@@ -1,5 +1,7 @@
 package ast;
 
+import visitor.Visitor;
+
 import javax.xml.bind.annotation.XmlElement;
 
 public abstract class AstNode {
@@ -14,5 +16,5 @@ public abstract class AstNode {
         this.lineNumber = lineNumber;
     }
 
-    abstract public void accept(Visitor v);
+    abstract public String accept(Visitor v);
 }

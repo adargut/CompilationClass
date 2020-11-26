@@ -5,6 +5,7 @@ import ast.MethodDecl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Method {
     private Boolean shouldRename = false;
@@ -108,5 +109,9 @@ public class Method {
 
     public void addCall(MethodCallExpr methodCallExpr) {
         this.calls.add(methodCallExpr);
+    }
+
+    public HashMap<String, Variable> getParams() {
+        return this.params;
     }
 }

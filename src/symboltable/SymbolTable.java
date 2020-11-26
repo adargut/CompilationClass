@@ -18,13 +18,17 @@ public class SymbolTable {
         this.classHierarchy = new Tree<Class>(new TreeNode<Class>("root", new Class("root", null)));
     }
 
-    public boolean addClass(String id, String parent, ClassDecl classDecl) {
+    public HashMap<String, Class> getClasses() {
+        return classes;
+    }
+
+    public boolean addClass(String id, String parent, ClassDecl classDecl, boolean isMainClass) {
         if (this.classes.containsKey(id)) {
             // Duplicate - class with that name already exist
             return false;
         }
 
-        var currentClass = new Class(id, classDecl, parent);
+        var currentClass = new Class(id, classDecl, parent, isMainClass);
 
         TreeNode<Class> currentClassNode = new TreeNode<Class>(id, currentClass);
 

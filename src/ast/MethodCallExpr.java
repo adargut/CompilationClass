@@ -1,5 +1,7 @@
 package ast;
 
+import visitor.Visitor;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import java.util.List;
@@ -26,8 +28,8 @@ public class MethodCallExpr extends Expr {
     }
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public String accept(Visitor v) {
+        return v.visit(this);
     }
 
     public Expr ownerExpr() {

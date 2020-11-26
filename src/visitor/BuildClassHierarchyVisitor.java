@@ -14,6 +14,7 @@ public class BuildClassHierarchyVisitor implements Visitor {
     public SymbolTable getSymbolTable() {
         return symbolTable;
     }
+
     public BuildClassHierarchyVisitor() {
         this.currentMethod = null;
         this.symbolTable = new SymbolTable();
@@ -31,7 +32,7 @@ public class BuildClassHierarchyVisitor implements Visitor {
 
     @Override
     public void visit(ClassDecl classDecl) {
-        if (!this.symbolTable.addClass(classDecl.name(), classDecl.superName(), classDecl)) {
+        if (!this.symbolTable.addClass(classDecl.name(), classDecl.superName(), classDecl, false)) {
             throw new RuntimeException(
                     String.format("A class with name %s was already declared!",
                             classDecl.name())
@@ -53,7 +54,7 @@ public class BuildClassHierarchyVisitor implements Visitor {
 
     @Override
     public void visit(MainClass mainClass) {
-        if (!this.symbolTable.addClass(mainClass.name(), null, null)) {
+        if (!this.symbolTable.addClass(mainClass.name(), null, null, true)) {
             throw new RuntimeException(
                     String.format("A class with name %s was already declared!",
                             mainClass.name())
@@ -63,7 +64,7 @@ public class BuildClassHierarchyVisitor implements Visitor {
         this.currentClass = this.symbolTable.getClass(mainClass.name());
         this.currentMethod = new Method("main", null, this.symbolTable.classHierarchy.getRoot().getData());
         this.currentClass.addMethod(this.currentMethod);
-        this.currentMethod.addParam(new Variable(mainClass.argsName(), new IntArrayAstType(), null));
+        this.currentMethod.addParam(new Variable(mainClass.argsName(), new IntArrayAstType(), null, false, false, true));
         mainClass.mainStatement().accept(this);
         this.currentMethod = null;
         this.currentClass = null;
@@ -110,7 +111,7 @@ public class BuildClassHierarchyVisitor implements Visitor {
             throw new RuntimeException("Formals can't be declared outside of a method!");
         }
 
-        if (!this.currentMethod.addParam(new Variable(formalArg.name(), formalArg.type(), formalArg.lineNumber))) {
+        if (!this.currentMethod.addParam(new Variable(formalArg.name(), formalArg.type(), formalArg.lineNumber, false, false, true))) {
             // A duplicate
             throw new RuntimeException(
                     String.format("Formal with symbol %s was already declared!", formalArg.name())
@@ -124,7 +125,7 @@ public class BuildClassHierarchyVisitor implements Visitor {
     public void visit(VarDecl varDecl) {
         if (this.currentMethod != null) {
             // Local scope - inside a method
-            if (!this.currentMethod.addVar(new Variable(varDecl.name(), varDecl.type(), varDecl.lineNumber))) {
+            if (!this.currentMethod.addVar(new Variable(varDecl.name(), varDecl.type(), varDecl.lineNumber, false, true, false))) {
                 // A duplicate
                 throw new RuntimeException(
                         String.format("Variable with symbol %s was already declared!", varDecl.name())
@@ -132,7 +133,7 @@ public class BuildClassHierarchyVisitor implements Visitor {
             }
         } else {
             // Global scope - inside a class (a field)
-            if (!this.currentClass.addVar(new Variable(varDecl.name(), varDecl.type(), varDecl.lineNumber))) {
+            if (!this.currentClass.addVar(new Variable(varDecl.name(), varDecl.type(), varDecl.lineNumber, true, false, false))) {
                 // A duplicate
                 throw new RuntimeException(
                         String.format("Field with symbol %s was already declared!", varDecl.name())

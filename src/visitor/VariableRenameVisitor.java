@@ -6,8 +6,6 @@ import symboltable.Method;
 import symboltable.SymbolTable;
 import symboltable.Variable;
 
-import java.util.ArrayList;
-
 public class VariableRenameVisitor implements Visitor {
     private final String newName;
     private final SymbolTable symbolTable;

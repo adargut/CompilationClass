@@ -1,11 +1,13 @@
 package ast;
 
+import visitor.Visitor;
+
 public class FalseExpr extends Expr {
     public FalseExpr() {
     }
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public String accept(Visitor v) {
+        return v.visit(this);
     }
 }

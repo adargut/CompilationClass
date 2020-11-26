@@ -1,12 +1,14 @@
 package ast;
 
+import visitor.Visitor;
+
 public class IntArrayAstType extends AstType {
 
     public IntArrayAstType() {
     }
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public String accept(Visitor v) {
+        return v.visit(this);
     }
 }

@@ -4,7 +4,9 @@ package symboltable;
 import ast.AstType;
 
 public class Variable {
-    private Boolean shouldRename;
+    private Boolean isParam;
+    private Boolean isField;
+    private Boolean isLocalVariable;
     private String symbol;
     private Integer lineNumber;
     private AstType type;
@@ -13,6 +15,18 @@ public class Variable {
         this.symbol = symbol;
         this.lineNumber = lineNumber;
         this.type = type;
+        this.isLocalVariable = true;
+        this.isField = false;
+        this.isParam = false;
+    }
+
+    public Variable(String symbol, AstType type, Integer lineNumber, Boolean isField, Boolean isLocalVariable, Boolean isParam) {
+        this.symbol = symbol;
+        this.lineNumber = lineNumber;
+        this.type = type;
+        this.isLocalVariable = isLocalVariable;
+        this.isField = isField;
+        this.isParam = isParam;
     }
 
     public String getSymbol() {
@@ -38,12 +52,15 @@ public class Variable {
         this.type = type;
     }
 
-    public Boolean getShouldRename() {
-        return shouldRename;
+    public Boolean getParam() {
+        return isParam;
     }
 
-    public void setShouldRename(Boolean shouldRename) {
-        this.shouldRename = shouldRename;
+    public Boolean getField() {
+        return isField;
     }
 
+    public Boolean getLocalVariable() {
+        return isLocalVariable;
+    }
 }
