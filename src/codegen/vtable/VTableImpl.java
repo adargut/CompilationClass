@@ -2,18 +2,24 @@ package codegen.vtable;
 
 import symboltable.Class;
 import symboltable.Method;
+import java.util.Set;
 
 public class VTableImpl implements VTable {
     /** This is the class the vtable corresponds to. */
-    Class _class;
+    private Class _class;
+    /** These are the methods of the class. */
+    private Set<Method> classMethods;
 
     @Override
-    public Method[] getMethods() {
-        throw new java.lang.UnsupportedOperationException("Need to support getMethods for vtable");
+    public Set<Method> getMethods() {
+        return this.classMethods;
     }
 
     @Override
-    public Boolean addMethod(Method method) {
-        throw new java.lang.UnsupportedOperationException("Need to support addMethod");
+    public void addMethod(Method method) {
+        if (classMethods.contains(method)) {
+            // todo throw some exception here: class cannot have same method twice. maybe this can't happen?
+        }
+        this.classMethods.add(method);
     }
 }
