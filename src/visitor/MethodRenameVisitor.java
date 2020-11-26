@@ -17,6 +17,11 @@ public class MethodRenameVisitor implements Visitor {
     private Class currentClass;
     private Method currentMethod;
 
+    private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
+        e.e1().accept(this);
+        e.e2().accept(this);
+    }
+
     public MethodRenameVisitor(String newName,
                                SymbolTable symbolTable,
                                String oldName,
@@ -129,32 +134,27 @@ public class MethodRenameVisitor implements Visitor {
 
     @Override
     public void visit(AndExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "&&");
     }
 
     @Override
     public void visit(LtExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "<");
     }
 
     @Override
     public void visit(AddExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "+");
     }
 
     @Override
     public void visit(SubtractExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "-");
     }
 
     @Override
     public void visit(MultExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "*");
     }
 
     @Override
@@ -243,7 +243,7 @@ public class MethodRenameVisitor implements Visitor {
 
     @Override
     public void visit(NewIntArrayExpr e) {
-
+        e.lengthExpr().accept(this);
     }
 
     @Override
@@ -253,7 +253,7 @@ public class MethodRenameVisitor implements Visitor {
 
     @Override
     public void visit(NotExpr e) {
-
+        e.e().accept(this);
     }
 
     @Override

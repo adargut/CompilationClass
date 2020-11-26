@@ -13,6 +13,11 @@ public class VariableRenameVisitor implements Visitor {
     private Class currentClass;
     private Method currentMethod;
 
+    private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
+        e.e1().accept(this);
+        e.e2().accept(this);
+    }
+
     public VariableRenameVisitor(String newName,
                                  SymbolTable symbolTable,
                                  String oldName,
@@ -211,32 +216,27 @@ public class VariableRenameVisitor implements Visitor {
 
     @Override
     public void visit(AndExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "&&");
     }
 
     @Override
     public void visit(LtExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "<");
     }
 
     @Override
     public void visit(AddExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "+");
     }
 
     @Override
     public void visit(SubtractExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "-");
     }
 
     @Override
     public void visit(MultExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+        visitBinaryExpr(e, "*");
     }
 
     @Override

@@ -25,7 +25,6 @@ public class Main {
             } else {
                 throw new UnsupportedOperationException("unknown input method " + inputMethod);
             }
-
             var outFile = new PrintWriter(outfilename);
             try {
 
@@ -76,12 +75,12 @@ public class Main {
                     AstXMLSerializer xmlSerializer = new AstXMLSerializer();
                     xmlSerializer.serialize(prog, outfilename);
 
-                    AstPrintVisitor astPrinter = new AstPrintVisitor();
-                    astPrinter.visit(prog);
-                    var outFile2 = new PrintWriter(outfilename + ".java");
-                    outFile2.write(astPrinter.getString());
-                    outFile2.flush();
-                    outFile2.close();
+//                    AstPrintVisitor astPrinter = new AstPrintVisitor();
+//                    astPrinter.visit(prog);
+//                    var outFile2 = new PrintWriter(outfilename + ".java");
+//                    outFile2.write(astPrinter.getString());
+//                    outFile2.flush();
+//                    outFile2.close();
 
 
                 } else {
