@@ -3,20 +3,34 @@ package codegen;
 import codegen.utils.JavaTypeToLLVMType;
 import symboltable.Variable;
 
-public final class Alloca implements Gen<Variable> {
+public final class Alloca implements Gen {
+    private Variable variable;
+    private static Alloca instance = null;
+
+    // Singleton
+    private Alloca() {}
+
+    /** Get a singleton instance of Alloca */
+    public static Alloca getInstance() {
+        if (instance == null) {
+            instance = new Alloca();
+        }
+        return instance;
+    }
+
+    /** Set the variable for Alloca */
+    public void setVariable(Variable variable) {
+        this.variable = variable;
+    }
+
     /**
      * LLVM code generation for allocating local variables on the stack.
      * Example: %ptr = alloca i32
      */
     @Override
-    public String generate(Variable... vars) {
-        if (vars.length != 1) {
-            throw new IllegalArgumentException("Tried to call generate Alloca with "
-                    + vars.length + " arguments instead of 1");
-        }
-        var variable = vars[0];
-        var variableType = variable.getType();
-        var variableSymbol = variable.getSymbol();
+    public String generate() {
+        var variableType = this.variable.getType();
+        var variableSymbol = this.variable.getSymbol();
         var variableLLVMType = JavaTypeToLLVMType.getLLVMType(variableType);
         return "%" + variableSymbol + " = alloca " + variableLLVMType;
     }

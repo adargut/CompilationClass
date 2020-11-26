@@ -10,7 +10,9 @@ class AllocaTest {
     @Test
     void testAlloca() {
         Variable v = new Variable("x", new RefType(), 10);
-        var actual = new Alloca().generate(v);
+        var alloca = Alloca.getInstance();
+        alloca.setVariable(v);
+        var actual = alloca.generate();
         var expected = "%x = alloca i32";
         Assertions.assertEquals(expected, actual);
     }
