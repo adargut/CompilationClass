@@ -28,17 +28,18 @@ public class AstPrintVisitor implements Visitor {
 
 
     @Override
-    public void visit(Program program) {
+    public String visit(Program program) {
         program.mainClass().accept(this);
         builder.append("\n");
         for (ClassDecl classdecl : program.classDecls()) {
             classdecl.accept(this);
             builder.append("\n");
         }
+        return null;
     }
 
     @Override
-    public void visit(ClassDecl classDecl) {
+    public String visit(ClassDecl classDecl) {
         appendWithIndent("class ");
         builder.append(classDecl.name());
         if (classDecl.superName() != null) {
@@ -58,10 +59,11 @@ public class AstPrintVisitor implements Visitor {
         }
         indent--;
         appendWithIndent("}\n");
+        return null;
     }
 
     @Override
-    public void visit(MainClass mainClass) {
+    public String visit(MainClass mainClass) {
         appendWithIndent("class ");
         builder.append(mainClass.name());
         builder.append(" {\n");
@@ -76,10 +78,11 @@ public class AstPrintVisitor implements Visitor {
         appendWithIndent("}\n");
         indent--;
         appendWithIndent("}\n");
+        return null;
     }
 
     @Override
-    public void visit(MethodDecl methodDecl) {
+    public String visit(MethodDecl methodDecl) {
         appendWithIndent("");
         methodDecl.returnType().accept(this);
         builder.append(" ");
@@ -111,26 +114,29 @@ public class AstPrintVisitor implements Visitor {
 
         indent--;
         appendWithIndent("}\n");
+        return delim;
     }
 
     @Override
-    public void visit(FormalArg formalArg) {
+    public String visit(FormalArg formalArg) {
         formalArg.type().accept(this);
         builder.append(" ");
         builder.append(formalArg.name());
+        return null;
     }
 
     @Override
-    public void visit(VarDecl varDecl) {
+    public String visit(VarDecl varDecl) {
         appendWithIndent("");
         varDecl.type().accept(this);
         builder.append(" ");
         builder.append(varDecl.name());
         builder.append(";\n");
+        return null;
     }
 
     @Override
-    public void visit(BlockStatement blockStatement) {
+    public String visit(BlockStatement blockStatement) {
         appendWithIndent("{");
         indent++;
         for (var s : blockStatement.statements()) {
@@ -140,10 +146,11 @@ public class AstPrintVisitor implements Visitor {
         indent--;
         builder.append("\n");
         appendWithIndent("}\n");
+        return null;
     }
 
     @Override
-    public void visit(IfStatement ifStatement) {
+    public String visit(IfStatement ifStatement) {
         appendWithIndent("if (");
         ifStatement.cond().accept(this);
         builder.append(")\n");
@@ -154,10 +161,11 @@ public class AstPrintVisitor implements Visitor {
         indent++;
         ifStatement.elsecase().accept(this);
         indent--;
+        return null;
     }
 
     @Override
-    public void visit(WhileStatement whileStatement) {
+    public String visit(WhileStatement whileStatement) {
         appendWithIndent("while (");
         whileStatement.cond().accept(this);
         builder.append(") {");
@@ -166,26 +174,29 @@ public class AstPrintVisitor implements Visitor {
         indent--;
         builder.append("\n");
         appendWithIndent("}\n");
+        return null;
     }
 
     @Override
-    public void visit(SysoutStatement sysoutStatement) {
+    public String visit(SysoutStatement sysoutStatement) {
         appendWithIndent("System.out.println(");
         sysoutStatement.arg().accept(this);
         builder.append(");\n");
+        return null;
     }
 
     @Override
-    public void visit(AssignStatement assignStatement) {
+    public String visit(AssignStatement assignStatement) {
         appendWithIndent("");
         builder.append(assignStatement.lv());
         builder.append(" = ");
         assignStatement.rv().accept(this);
         builder.append(";\n");
+        return null;
     }
 
     @Override
-    public void visit(AssignArrayStatement assignArrayStatement) {
+    public String visit(AssignArrayStatement assignArrayStatement) {
         appendWithIndent("");
         builder.append(assignArrayStatement.lv());
         builder.append("[");
@@ -194,53 +205,61 @@ public class AstPrintVisitor implements Visitor {
         builder.append(" = ");
         assignArrayStatement.rv().accept(this);
         builder.append(";\n");
+        return null;
     }
 
     @Override
-    public void visit(AndExpr e) {
+    public String visit(AndExpr e) {
         visitBinaryExpr(e, "&&");
+        return null;
     }
 
     @Override
-    public void visit(LtExpr e) {
+    public String visit(LtExpr e) {
         visitBinaryExpr(e, "<");;
+        return null;
     }
 
     @Override
-    public void visit(AddExpr e) {
+    public String visit(AddExpr e) {
         visitBinaryExpr(e, "+");;
+        return null;
     }
 
     @Override
-    public void visit(SubtractExpr e) {
+    public String visit(SubtractExpr e) {
         visitBinaryExpr(e, "-");
+        return null;
     }
 
     @Override
-    public void visit(MultExpr e) {
+    public String visit(MultExpr e) {
         visitBinaryExpr(e, "*");
+        return null;
     }
 
     @Override
-    public void visit(ArrayAccessExpr e) {
+    public String visit(ArrayAccessExpr e) {
         builder.append("(");
         e.arrayExpr().accept(this);
         builder.append(")");
         builder.append("[");
         e.indexExpr().accept(this);
         builder.append("]");
+        return null;
     }
 
     @Override
-    public void visit(ArrayLengthExpr e) {
+    public String visit(ArrayLengthExpr e) {
         builder.append("(");
         e.arrayExpr().accept(this);
         builder.append(")");
         builder.append(".length");
+        return null;
     }
 
     @Override
-    public void visit(MethodCallExpr e) {
+    public String visit(MethodCallExpr e) {
         builder.append("(");
         e.ownerExpr().accept(this);
         builder.append(")");
@@ -255,70 +274,83 @@ public class AstPrintVisitor implements Visitor {
             delim = ", ";
         }
         builder.append(")");
+        return delim;
     }
 
     @Override
-    public void visit(IntegerLiteralExpr e) {
+    public String visit(IntegerLiteralExpr e) {
         builder.append(e.num());
+        return null;
     }
 
     @Override
-    public void visit(TrueExpr e) {
+    public String visit(TrueExpr e) {
         builder.append("true");
+        return null;
     }
 
     @Override
-    public void visit(FalseExpr e) {
+    public String visit(FalseExpr e) {
         builder.append("false");
+        return null;
     }
 
     @Override
-    public void visit(IdentifierExpr e) {
+    public String visit(IdentifierExpr e) {
         builder.append(e.id());
+        return null;
     }
 
-    public void visit(ThisExpr e) {
+    public String visit(ThisExpr e) {
         builder.append("this");
+        return null;
     }
 
     @Override
-    public void visit(NewIntArrayExpr e) {
+    public String visit(NewIntArrayExpr e) {
         builder.append("new int[");
         e.lengthExpr().accept(this);
         builder.append("]");
+        return null;
     }
 
     @Override
-    public void visit(NewObjectExpr e) {
+    public String visit(NewObjectExpr e) {
         builder.append("new ");
         builder.append(e.classId());
         builder.append("()");
+        return null;
     }
 
     @Override
-    public void visit(NotExpr e) {
+    public String visit(NotExpr e) {
         builder.append("!(");
         e.e().accept(this);
         builder.append(")");
+        return null;
     }
 
     @Override
-    public void visit(IntAstType t) {
+    public String visit(IntAstType t) {
         builder.append("int");
+        return null;
     }
 
     @Override
-    public void visit(BoolAstType t) {
+    public String visit(BoolAstType t) {
         builder.append("boolean");
+        return null;
     }
 
     @Override
-    public void visit(IntArrayAstType t) {
+    public String visit(IntArrayAstType t) {
         builder.append("int[]");
+        return null;
     }
 
     @Override
-    public void visit(RefType t) {
+    public String visit(RefType t) {
         builder.append(t.id());
+        return null;
     }
 }

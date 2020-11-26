@@ -32,6 +32,17 @@ public final class Alloca implements Gen {
         var variableType = this.variable.getType();
         var variableSymbol = this.variable.getSymbol();
         var variableLLVMType = JavaTypeToLLVMType.getLLVMType(variableType);
-        return "%" + variableSymbol + " = alloca " + variableLLVMType;
+        return "\t%" + variableSymbol + " = alloca " + variableLLVMType + "\n";
+    }
+
+    /**
+     * LLVM code generation for allocating local variables on the stack to a specified register.
+     * Example: %registerName = alloca i32
+     */
+    public String generate(String registerName) {
+        var variableType = this.variable.getType();
+        var variableSymbol = this.variable.getSymbol();
+        var variableLLVMType = JavaTypeToLLVMType.getLLVMType(variableType);
+        return "\t%" + registerName + " = alloca " + variableLLVMType + "\n";
     }
 }

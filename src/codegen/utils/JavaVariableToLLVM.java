@@ -11,4 +11,9 @@ public final class JavaVariableToLLVM {
         var variableType = variable.getType();
         return JavaTypeToLLVMType.getLLVMType(variableType) + " %" + variable.getSymbol();
     }
+
+    public static String translateToLLVM(Variable variable, String registerName) {
+        var variableType = variable.getType();
+        return JavaTypeToLLVMType.getLLVMType(variableType) + " %" + registerName;
+    }
 }

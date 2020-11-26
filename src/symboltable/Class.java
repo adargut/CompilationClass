@@ -144,7 +144,7 @@ public class Class {
      * @param methodsMap The map to fill with methods
      */
     private void getAllMethodsRecursive(Class curr, LinkedHashMap<String, Method> methodsMap) {
-        if (curr.node.getParent() == null) {
+        if (curr.node == null) {
             // Reached top level in the class hierarchy
         }
 
@@ -178,7 +178,7 @@ public class Class {
      * @param variablesMap The map to fill with fields
      */
     private void getAllVariablesRecursive(Class curr, LinkedHashMap<String, Variable> variablesMap) {
-        if (curr.node.getParent() == null) {
+        if (curr.node == null) {
             // Reached top level in the class hierarchy
         }
 

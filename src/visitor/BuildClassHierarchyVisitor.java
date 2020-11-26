@@ -27,16 +27,17 @@ public class BuildClassHierarchyVisitor implements Visitor {
     }
 
     @Override
-    public void visit(Program program) {
+    public String visit(Program program) {
         program.mainClass().accept(this);
 
         for (ClassDecl classdecl : program.classDecls()) {
             classdecl.accept(this);
         }
+        return null;
     }
 
     @Override
-    public void visit(ClassDecl classDecl) {
+    public String visit(ClassDecl classDecl) {
         if (!this.symbolTable.addClass(classDecl.name(), classDecl.superName(), classDecl, false)) {
             throw new RuntimeException(
                     String.format("A class with name %s was already declared!",
@@ -55,10 +56,11 @@ public class BuildClassHierarchyVisitor implements Visitor {
 
         // Backtrack - exit class
         this.currentClass = null;
+        return null;
     }
 
     @Override
-    public void visit(MainClass mainClass) {
+    public String visit(MainClass mainClass) {
         if (!this.symbolTable.addClass(mainClass.name(), null, null, true)) {
             throw new RuntimeException(
                     String.format("A class with name %s was already declared!",
@@ -73,10 +75,11 @@ public class BuildClassHierarchyVisitor implements Visitor {
         mainClass.mainStatement().accept(this);
         this.currentMethod = null;
         this.currentClass = null;
+        return null;
     }
 
     @Override
-    public void visit(MethodDecl methodDecl) {
+    public String visit(MethodDecl methodDecl) {
         if (this.currentClass == null) {
             throw new RuntimeException("Methods can't be declared outside of a class!");
         }
@@ -108,10 +111,11 @@ public class BuildClassHierarchyVisitor implements Visitor {
 
         // Backtrack - exit method
         this.currentMethod = null;
+        return null;
     }
 
     @Override
-    public void visit(FormalArg formalArg) {
+    public String visit(FormalArg formalArg) {
         if (this.currentMethod == null) {
             throw new RuntimeException("Formals can't be declared outside of a method!");
         }
@@ -124,10 +128,11 @@ public class BuildClassHierarchyVisitor implements Visitor {
         }
 
         formalArg.type().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(VarDecl varDecl) {
+    public String visit(VarDecl varDecl) {
         if (this.currentMethod != null) {
             // Local scope - inside a method
             if (!this.currentMethod.addVar(new Variable(varDecl.name(), varDecl.type(), varDecl.lineNumber, false, true, false))) {
@@ -147,135 +152,162 @@ public class BuildClassHierarchyVisitor implements Visitor {
         }
 
         varDecl.type().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(BlockStatement blockStatement) {
+    public String visit(BlockStatement blockStatement) {
         for (var s : blockStatement.statements()) {
             s.accept(this);
         }
+        return null;
     }
 
     @Override
-    public void visit(IfStatement ifStatement) {
+    public String visit(IfStatement ifStatement) {
         ifStatement.cond().accept(this);
         ifStatement.thencase().accept(this);
         ifStatement.elsecase().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(WhileStatement whileStatement) {
+    public String visit(WhileStatement whileStatement) {
         whileStatement.cond().accept(this);
         whileStatement.body().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(SysoutStatement sysoutStatement) {
+    public String visit(SysoutStatement sysoutStatement) {
         sysoutStatement.arg().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(AssignStatement assignStatement) {
+    public String visit(AssignStatement assignStatement) {
         assignStatement.rv().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(AssignArrayStatement assignArrayStatement) {
+    public String visit(AssignArrayStatement assignArrayStatement) {
         assignArrayStatement.index().accept(this);
         assignArrayStatement.rv().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(AndExpr e) {
+    public String visit(AndExpr e) {
         visitBinaryExpr(e, "&&");
+        return null;
     }
 
     @Override
-    public void visit(LtExpr e) {
+    public String visit(LtExpr e) {
         visitBinaryExpr(e, "<");
+        return null;
     }
 
     @Override
-    public void visit(AddExpr e) {
+    public String visit(AddExpr e) {
         visitBinaryExpr(e, "+");
+        return null;
     }
 
     @Override
-    public void visit(SubtractExpr e) {
+    public String visit(SubtractExpr e) {
         visitBinaryExpr(e, "-");
+        return null;
     }
 
     @Override
-    public void visit(MultExpr e) {
+    public String visit(MultExpr e) {
         visitBinaryExpr(e, "*");
+        return null;
     }
 
     @Override
-    public void visit(ArrayAccessExpr e) {
+    public String visit(ArrayAccessExpr e) {
         e.arrayExpr().accept(this);
         e.indexExpr().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(ArrayLengthExpr e) {
+    public String visit(ArrayLengthExpr e) {
         e.arrayExpr().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(MethodCallExpr e) {
+    public String visit(MethodCallExpr e) {
         e.ownerExpr().accept(this);
         for (Expr arg : e.actuals()) {
             arg.accept(this);
         }
+        return null;
     }
 
     @Override
-    public void visit(IntegerLiteralExpr e) {
+    public String visit(IntegerLiteralExpr e) {
+        return null;
     }
 
     @Override
-    public void visit(TrueExpr e) {
+    public String visit(TrueExpr e) {
+        return null;
     }
 
     @Override
-    public void visit(FalseExpr e) {
+    public String visit(FalseExpr e) {
+        return null;
     }
 
     @Override
-    public void visit(IdentifierExpr e) {
+    public String visit(IdentifierExpr e) {
+        return null;
     }
 
-    public void visit(ThisExpr e) {
+    public String visit(ThisExpr e) {
+        return null;
     }
 
     @Override
-    public void visit(NewIntArrayExpr e) {
+    public String visit(NewIntArrayExpr e) {
         e.lengthExpr().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(NewObjectExpr e) {
+    public String visit(NewObjectExpr e) {
+        return null;
     }
 
     @Override
-    public void visit(NotExpr e) {
+    public String visit(NotExpr e) {
         e.e().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(IntAstType t) {
+    public String visit(IntAstType t) {
+        return null;
     }
 
     @Override
-    public void visit(BoolAstType t) {
+    public String visit(BoolAstType t) {
+        return null;
     }
 
     @Override
-    public void visit(IntArrayAstType t) {
+    public String visit(IntArrayAstType t) {
+        return null;
     }
 
     @Override
-    public void visit(RefType t) {
+    public String visit(RefType t) {
+        return null;
     }
 
 }

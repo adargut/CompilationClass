@@ -1,9 +1,8 @@
 import ast.*;
+import codegen.vtable.VTable;
+import codegen.vtable.VTables;
 import symboltable.SymbolTable;
-import visitor.AstPrintVisitor;
-import visitor.BuildClassHierarchyVisitor;
-import visitor.MethodRenameVisitor;
-import visitor.VariableRenameVisitor;
+import visitor.*;
 
 import java.io.*;
 
@@ -27,6 +26,10 @@ public class Main {
             }
             var outFile = new PrintWriter(outfilename);
             try {
+                BuildClassHierarchyVisitor buildClassHierarchyVisitor = new BuildClassHierarchyVisitor();
+                buildClassHierarchyVisitor.visit(prog);
+
+                SymbolTable symbolTable = buildClassHierarchyVisitor.getSymbolTable();
 
                 if (action.equals("marshal")) {
                     AstXMLSerializer xmlSerializer = new AstXMLSerializer();
@@ -40,7 +43,10 @@ public class Main {
                     throw new UnsupportedOperationException("TODO - Ex. 3");
 
                 } else if (action.equals("compile")) {
-                    throw new UnsupportedOperationException("TODO - Ex. 2");
+                    VTables vTables = VTables.createVTables(symbolTable);
+                    LLVMGeneratorVisitor llvmGeneratorVisitor = new LLVMGeneratorVisitor(vTables, symbolTable);
+                    llvmGeneratorVisitor.visit(prog);
+                    outFile.write(llvmGeneratorVisitor.getString());
 
                 } else if (action.equals("rename")) {
                     var type = args[2];
@@ -57,11 +63,6 @@ public class Main {
                     } else {
                         throw new IllegalArgumentException("unknown rename type " + type);
                     }
-
-                    BuildClassHierarchyVisitor buildClassHierarchyVisitor = new BuildClassHierarchyVisitor();
-                    buildClassHierarchyVisitor.visit(prog);
-
-                    SymbolTable symbolTable = buildClassHierarchyVisitor.getSymbolTable();
 
                     if (isMethod) {
                         MethodRenameVisitor methodRenameVisitor = new MethodRenameVisitor(newName, symbolTable, originalName, originalLine);

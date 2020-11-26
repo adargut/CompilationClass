@@ -16,4 +16,13 @@ class AllocaTest {
         var expected = "%x = alloca i32";
         Assertions.assertEquals(expected, actual);
     }
+
+    void testAllocaWithCustomRegisterName() {
+        Variable v = new Variable("x", new RefType(), 10);
+        var alloca = Alloca.getInstance();
+        alloca.setVariable(v);
+        var actual = alloca.generate("y");
+        var expected = "%y = alloca i32";
+        Assertions.assertEquals(expected, actual);
+    }
 }

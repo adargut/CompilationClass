@@ -1,13 +1,15 @@
 package visitor;
 
 import ast.*;
+import codegen.Alloca;
+import codegen.Declare;
+import codegen.utils.JavaTypeToLLVMType;
+import codegen.utils.LLVMType;
 import symboltable.Class;
 import symboltable.Method;
 import symboltable.SymbolTable;
 import symboltable.Variable;
-import vtables.VTables;
-
-import java.util.Map;
+import codegen.vtable.VTables;
 
 public class LLVMGeneratorVisitor implements Visitor {
     private StringBuilder builder = new StringBuilder();
@@ -19,8 +21,6 @@ public class LLVMGeneratorVisitor implements Visitor {
     private int loopLabel;
     private int ifLabel;
     private int andLabel;
-    private int boundsLabel;
-    private int arrAllocLabel;
 
     public String getString() {
         return builder.toString();
@@ -34,105 +34,40 @@ public class LLVMGeneratorVisitor implements Visitor {
         this.loopLabel = 0;
         this.ifLabel = 0;
         this.andLabel = 0;
-        this.boundsLabel = 0;
-        this.arrAllocLabel = 0;
     }
 
-    String get_register() {
-        int ret = this.register;
+    String getRegister() {
+        int retVal = this.register;
         this.register++;
-        return "%_" + ret;
+        return "%_" + retVal;
     }
 
-    String getObjectType(Object obj) {
-        if (obj instanceof IntAstType) {
-            return "i32";
-        }
-
-        else if (obj instanceof BoolAstType) {
-            return "i1";
-        }
-
-        else if (obj instanceof IntArrayAstType) {
-            return "i32*";
-        }
-
-        else {
-            return "i8*";
-        }
-    }
-    void createVTables() {
-        boolean isFirst = true;
-
-        for(Map.Entry entry: this.vTables.classesTables.entrySet()) {
-            String className = (String) entry.getKey();
-            VTables.ClassVTable classVTable = this.vTables.classesTables.get(className);
-
-            if (classVTable.isMainClass) {
-                this.builder.append("@." + className + "_vtable = global [0 x i8*] []\n");
-                continue;
-            }
-
-            int numberOfMethods = classVTable.methodsTable.size();
-            this.builder.append("@." + className + "_vtable = global [" + numberOfMethods + " x i8*] [");
-
-            // Return type
-            for (Map.Entry methodEntry: classVTable.methodsTable.entrySet()) {
-                if (!isFirst) {
-                    this.builder.append(", ");
-                }
-
-                String methodName = (String) methodEntry.getKey();
-                Method method = (Method) methodEntry.getValue();
-
-                this.builder.append("i8* bitcast (" + getObjectType(method.getMethodDecl().returnType()) + " (i8*");
-
-                // Params
-                for (Map.Entry methodParam: method.getParams().entrySet()) {
-                    String paramName = (String) methodParam.getKey();
-                    Variable param = (Variable) methodParam.getValue();
-
-                    this.builder.append(", " + getObjectType(param.getType()));
-                }
-
-                this.builder.append(")* @" + className + "." + methodName + " to i8*)");
-                isFirst = false;
-            }
-
-            this.builder.append("]\n");
-        }
+    String getIfLabel() {
+        int retVal = this.ifLabel;
+        this.ifLabel++;
+        return "if" + retVal;
     }
 
-    void createHelperMethods() {
-        this.builder.append(
-                "declare i8* @calloc(i32, i32)\n" +
-                "declare i32 @printf(i8*, ...)\n" +
-                "declare void @exit(i32)\n" +
-                "\n" +
-                "@_cint = constant [4 x i8] c\"%d\\0a\\00\"\n" +
-                "@_cOOB = constant [15 x i8] c\"Out of bounds\\0a\\00\"\n" +
-                "define void @print_int(i32 %i) {\n" +
-                "    %_str = bitcast [4 x i8]* @_cint to i8*\n" +
-                "    call i32 (i8*, ...) @printf(i8* %_str, i32 %i)\n" +
-                "    ret void\n" +
-                "}\n" +
-                "\n" +
-                "define void @throw_oob() {\n" +
-                "    %_str = bitcast [15 x i8]* @_cOOB to i8*\n" +
-                "    call i32 (i8*, ...) @printf(i8* %_str)\n" +
-                "    call void @exit(i32 1)\n" +
-                "    ret void\n" +
-                "}"
-        );
+    String getLoopLabel() {
+        int retVal = this.loopLabel;
+        this.loopLabel++;
+        return "loop" + retVal;
+    }
+
+    String getAndLabel() {
+        int retVal = this.andLabel;
+        this.andLabel++;
+        return "andcond" + retVal;
     }
 
     @Override
     public String visit(Program program) {
         // Create VTables;
-        this.createVTables();
+        this.builder.append(this.vTables.generate());
 
         // Declare the helper methods
-        this.createHelperMethods();
+        var declare = Declare.getInstance();
+        this.builder.append(declare.generate());
 
         // Visit main class
         program.mainClass().accept(this);
@@ -173,8 +108,6 @@ public class LLVMGeneratorVisitor implements Visitor {
         this.loopLabel = 0;
         this.ifLabel = 0;
         this.andLabel = 0;
-        this.boundsLabel = 0;
-        this.arrAllocLabel = 0;
 
         this.currentMethod = null;
         this.currentClass = null;
@@ -186,16 +119,12 @@ public class LLVMGeneratorVisitor implements Visitor {
     public String visit(MethodDecl methodDecl) {
         this.currentMethod = this.currentClass.getMethod(methodDecl.name());
 
-        this.builder.append("\ndefine " + getObjectType(methodDecl.returnType()) + "@" + this.currentClass.getName()
-                + "." + methodDecl.name() + "(i8* %this, ");
+        this.builder.append("\ndefine " + JavaTypeToLLVMType.getLLVMType(methodDecl.returnType()) + "@" + this.currentClass.getName()
+                + "." + methodDecl.name() + "(i8* %this");
 
-        boolean isFirst = true;
         for (var formal : methodDecl.formals()) {
-            if (!isFirst) {
-                this.builder.append(", ");
-            }
-            this.builder.append(getObjectType(formal.type() + " %." + formal.name()));
-            isFirst = false;
+            this.builder.append(", ");
+            this.builder.append(JavaTypeToLLVMType.getLLVMType(formal.type()) + " %." + formal.name());
         }
 
         this.builder.append(") {\n");
@@ -214,205 +143,344 @@ public class LLVMGeneratorVisitor implements Visitor {
         }
 
         String retRegister = methodDecl.ret().accept(this);
-        this,builder.append("\n\tret " + getObjectType(methodDecl.returnType()) + " " + retRegister + "\n}\n";)
-        this.currentMethod = null;
-    }
+        this.builder.append("\tret " + JavaTypeToLLVMType.getLLVMType(methodDecl.returnType()) + " " + retRegister + "\n}\n");
 
-    @Override
-    public String visit(FormalArg formalArg) {
-        String type = getObjectType(formalArg.type());
-        this.builder.append("\t%" + formalArg.name() + " = alloca " +  type + "\n");
-        this.builder.append("\tstore " + type + " %." + formalArg.name() + ", " + type + "* %" + formalArg.name() + "\n");
+        this.register = 0;
+        this.loopLabel = 0;
+        this.ifLabel = 0;
+        this.andLabel = 0;
+        this.currentMethod = null;
+
         return null;
     }
 
     @Override
-    public void visit(VarDecl varDecl) {
-
+    public String visit(FormalArg formalArg) {
+        Alloca alloca = Alloca.getInstance();
+        String variableSymbol = formalArg.name();
+        LLVMType llvmType = JavaTypeToLLVMType.getLLVMType(formalArg.type());
+        alloca.setVariable(symbolTable.getVar(this.currentMethod, formalArg.name()));
+        this.builder.append(alloca.generate());
+        this.builder.append("\tstore " + llvmType + " %." + variableSymbol + ", " + llvmType + "* %" + variableSymbol + "\n");
+        return null;
     }
 
     @Override
-    public void visit(BlockStatement blockStatement) {
+    public String visit(VarDecl varDecl) {
+        Variable var = symbolTable.getVar(this.currentMethod, varDecl.name());
+
+        if (var.isLocalVariable()) {
+            // Method scope
+            Alloca alloca = Alloca.getInstance();
+            alloca.setVariable(var);
+            this.builder.append(alloca.generate());
+        }
+
+        return null;
+    }
+
+    @Override
+    public String visit(BlockStatement blockStatement) {
         for (var statement : blockStatement.statements()) {
             statement.accept(this);
         }
+        return null;
     }
 
     @Override
-    public void visit(IfStatement ifStatement) {
-        ifStatement.cond().accept(this);
+    public String visit(IfStatement ifStatement) {
+        String ifLabel = getIfLabel();
+        String elseLabel = getIfLabel();
+        String exitLabel = getIfLabel();
+
+        String retRegister = ifStatement.cond().accept(this);
+        this.builder.append("\tbr i1 " + retRegister + ", label %" + ifLabel + ", label %" + elseLabel + "\n");
+
+        this.builder.append(ifLabel + ":\n");
         ifStatement.thencase().accept(this);
+        this.builder.append("\n\tbr label %" + exitLabel + "\n");
+
+        this.builder.append(elseLabel + ":\n");
         ifStatement.elsecase().accept(this);
+        this.builder.append("\n\tbr label %" + exitLabel + "\n");
+
+        this.builder.append(exitLabel + ":\n");
+        return null;
     }
 
     @Override
-    public void visit(WhileStatement whileStatement) {
-        whileStatement.cond().accept(this);
+    public String visit(WhileStatement whileStatement) {
+        String condLabel = getLoopLabel();
+        String loopLabel = getLoopLabel();
+        String exitLabel = getLoopLabel();
+
+        this.builder.append("\n\tbr label %" + condLabel + "\n");
+        this.builder.append(condLabel + ":\n");
+        String condResRegister = whileStatement.cond().accept(this);
+
+        this.builder.append("\tbr i1 " + condResRegister + ", label %" + loopLabel + ", label %" + exitLabel + "\n");
+        this.builder.append(loopLabel + ":\n");
         whileStatement.body().accept(this);
+        this.builder.append("\n\tbr label %" + condLabel + "\n");
+
+        this.builder.append(exitLabel + ":\n");
+        return null;
     }
 
     @Override
-    public void visit(SysoutStatement sysoutStatement) {
-        sysoutStatement.arg().accept(this);
+    public String visit(SysoutStatement sysoutStatement) {
+        String retRegister = sysoutStatement.arg().accept(this);
+        this.builder.append("\tcall void (i32) @print_int(i32 " + retRegister + ")\n");
+        return null;
     }
 
     @Override
-    public void visit(AssignStatement assignStatement) {
-        assignStatement.rv().accept(this);
+    public String visit(AssignStatement assignStatement) {
+        Variable var;
+
+        if (this.currentMethod != null) {
+            // Method scope - assigning a local var or a param
+            var = symbolTable.getVar(this.currentMethod, assignStatement.lv());
+        }
+        else {
+            // Class scope - assigning a field
+            var = symbolTable.getVar(this.currentClass, assignStatement.lv());
+
+        }
+
+        if (var == null) {
+            throw new RuntimeException(String.format("Variable %s was not found!", assignStatement.lv()));
+        }
+
+        String rvReg = assignStatement.rv().accept(this);
+        LLVMType type = JavaTypeToLLVMType.getLLVMType(var.getType());
+
+        if (var.isParam() || var.isLocalVariable()) {
+            this.builder.append(
+                    "\tstore " + type + " " + rvReg + ", " + type + "* %" + assignStatement.lv() + "\n"
+            );
+        }
+
+        else {
+            // Var is a field
+            String reg1 = getRegister();
+            String reg2 = getRegister();
+            VTables.ClassVTable classVTable = this.vTables.classesTables.get(this.currentClass.getName());
+            this.builder.append("\t" + reg1 + " = getelementptr i8, i8* %this, i32 " + classVTable.getVarOffset(var.getSymbol()) + "\n");
+            this.builder.append("\t" + reg2 + " = bitcast i8* " + reg1 + " to " + type + "*" + "\n");
+            this.builder.append(
+                    "\tstore " + type + " " + rvReg + ", " + type + "* %" + reg2 + "\n"
+            );
+        }
+
+        return null;
     }
 
     @Override
-    public void visit(AssignArrayStatement assignArrayStatement) {
+    public String visit(AssignArrayStatement assignArrayStatement) {
+        // TODO
         assignArrayStatement.index().accept(this);
         assignArrayStatement.rv().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(AndExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+    public String visit(AndExpr e) {
+        String label1 = getAndLabel();
+        String label2 = getAndLabel();
+        String label3 = getAndLabel();
+        String label4 = getAndLabel();
+
+        String cond1Reg = e.e1().accept(this);
+        this.builder.append("\tbr label %" + label1 + "\n");
+        this.builder.append(label1 + ":\n");
+        this.builder.append("\tbr i1 " + cond1Reg + ", label %" + label2 + ", label %" + label4 + "\n");
+
+        this.builder.append(label2 + ":\n");
+        String cond2Reg = e.e2().accept(this);
+        this.builder.append("\tbr label %" + label3 + "\n");
+
+        this.builder.append(label3 + ":\n");
+        this.builder.append("\tbr label %" + label4 + "\n");
+
+        String phi = getRegister();
+        this.builder.append(label4 + ":\n");
+        this.builder.append("\t" + phi + " = phi i1 [ 0, %" + label1 + " ], [ " + cond2Reg + ", %" + label3 + " ]\n");
+
+        return phi;
     }
 
     @Override
-    public void visit(LtExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+    public String visit(LtExpr e) {
+        String reg1 = e.e1().accept(this);
+        String reg2 =  e.e2().accept(this);
+
+        String resReg = getRegister();
+        this.builder.append("\t" + resReg + " = icmp slt i32 " + reg1 + ", " + reg2 + "\n");
+        return resReg;
     }
 
     @Override
-    public void visit(AddExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+    public String visit(AddExpr e) {
+        String reg1 = e.e1().accept(this);
+        String reg2 =  e.e2().accept(this);
+
+        String resReg = getRegister();
+        this.builder.append("\t" + resReg + " = add i32 " + reg1 + ", " + reg2 + "\n");
+        return resReg;
     }
 
     @Override
-    public void visit(SubtractExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+    public String visit(SubtractExpr e) {
+        String reg1 = e.e1().accept(this);
+        String reg2 =  e.e2().accept(this);
+
+        String resReg = getRegister();
+        this.builder.append("\t" + resReg + " = sub i32 " + reg1 + ", " + reg2 + "\n");
+        return resReg;
     }
 
     @Override
-    public void visit(MultExpr e) {
-        e.e1().accept(this);
-        e.e2().accept(this);
+    public String visit(MultExpr e) {
+        String reg1 = e.e1().accept(this);
+        String reg2 =  e.e2().accept(this);
+
+        String resReg = getRegister();
+        this.builder.append("\t" + resReg + " = mul i32 " + reg1 + ", " + reg2 + "\n");
+        return resReg;
     }
 
     @Override
-    public void visit(ArrayAccessExpr e) {
+    public String visit(ArrayAccessExpr e) {
+        // TODO
         e.indexExpr().accept(this);
-        e.arrayExpr().accept(this); // todo is this needed?
-    }
-
-    @Override
-    public void visit(ArrayLengthExpr e) {
         e.arrayExpr().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(MethodCallExpr e) {
-        // todo change this at the end to change after traversal
-        var owner = e.ownerExpr();
-        if (!e.methodId().equals(this.oldName)) return;
+    public String visit(ArrayLengthExpr e) {
+        // TODO
+        e.arrayExpr().accept(this);
+        return null;
+    }
 
-        // Case this.foo()
-        if (e.ownerExpr() instanceof ThisExpr && relevantClasses.contains(currentClass)) {
-            e.setMethodId(this.newName);
+    @Override
+    public String visit(MethodCallExpr e) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public String visit(IntegerLiteralExpr e) {
+        return String.valueOf(e.num());
+    }
+
+    @Override
+    public String visit(TrueExpr e) {
+        return "1";
+    }
+
+    @Override
+    public String visit(FalseExpr e) {
+        return "0";
+    }
+
+    @Override
+    public String visit(IdentifierExpr e) {
+        // TODO ?? No idea if this is really correct (even though seems to work on many examples)
+        Variable variable;
+
+        // Search for symbol upwards in symbol table to get type of the variable
+        if (this.currentMethod == null) {
+            // Global scope
+            variable = this.symbolTable.getVar(this.currentClass, e.id());
+        }
+        else {
+            // Local scope (method scope)
+            variable = this.symbolTable.getVar(this.currentMethod, e.id());
         }
 
-        // Case x.foo()
-        if (owner instanceof IdentifierExpr) {
-            String symbol = ((IdentifierExpr) owner).id();
-
-            Variable variable;
-
-            // Search for symbol upwards in symbol table to get type of the variable
-            if (this.currentMethod == null) {
-                // Global scope
-                variable = this.symbolTable.getVar(this.currentClass, symbol);
-            }
-            else {
-                // Local scope (method scope)
-                variable = this.symbolTable.getVar(this.currentMethod, symbol);
-            }
-
-            if (variable == null) {
-                throw new RuntimeException(String.format("Variable with name %s was not declared in current scope!", symbol));
-            }
-
-            var varType = variable.getType();
-
-            if (varType instanceof RefType) {
-                String className = ((RefType) varType).id();
-                var staticType = symbolTable.getClass(className);
-                if (staticType != null && relevantClasses.contains(staticType)) e.setMethodId(this.newName);
-            }
+        if (variable == null) {
+            throw new RuntimeException(String.format("Variable with name %s was not declared in current scope!", e.id()));
         }
 
-        // Case New X().foo()
-        if (owner instanceof NewObjectExpr) {
-            String className = ((NewObjectExpr) owner).classId();
-            var staticType = symbolTable.getClass(className);
-            if (staticType != null && relevantClasses.contains(staticType)) e.setMethodId(this.newName);
+        LLVMType type = JavaTypeToLLVMType.getLLVMType(variable.getType());
+
+        if (variable.isParam() || variable.isLocalVariable()) {
+            String reg = getRegister();
+            this.builder.append("\t" + reg + " = load " + type + ", " + type + "* %" + e.id() + "\n");
+            return reg;
         }
-    }
 
-    @Override
-    public void visit(IntegerLiteralExpr e) {
-
-    }
-
-    @Override
-    public void visit(TrueExpr e) {
-
-    }
-
-    @Override
-    public void visit(FalseExpr e) {
+        else {
+            // Var is a field
+            String reg1 = getRegister();
+            String reg2 = getRegister();
+            String reg3 = getRegister();
+            VTables.ClassVTable classVTable = this.vTables.classesTables.get(this.currentClass.getName());
+            this.builder.append("\t" + reg1 + " = getelementptr i8, i8* %this, i32 " + classVTable.getVarOffset(variable.getSymbol()) + "\n");
+            this.builder.append("\t" + reg2 + " = bitcast i8* " + reg1 + " to " + type + "*" + "\n");
+            this.builder.append("\t" + reg3 + " = load " + type + ", " + type + "* " + reg2 + "\n");
+            return reg3;
+        }
 
     }
 
     @Override
-    public void visit(IdentifierExpr e) {
-
+    public String visit(ThisExpr e) {
+        return "%this";
     }
 
     @Override
-    public void visit(ThisExpr e) {
-
+    public String visit(NewIntArrayExpr e) {
+        return null;
     }
 
     @Override
-    public void visit(NewIntArrayExpr e) {
+    public String visit(NewObjectExpr e) {
+        String reg1 = getRegister();
+        String reg2 = getRegister();
+        String reg3 = getRegister();
 
+        VTables.ClassVTable classVTable = this.vTables.classesTables.get(e.classId());
+
+        this.builder.append("\t" + reg1 + " = call i8* @calloc(i32 1, i32 " + classVTable.getClassSize() +")\n");
+        this.builder.append("\t" + reg2 + " = bitcast i8* " + reg1 + " to i8***\n");
+        this.builder.append("\t" + reg3 + " = getelementptr [" + classVTable.methodsTable.size() + " x i8*], [" + classVTable.methodsTable.size() + " x i8*]* @." + e.classId() + "_vtable, i32 0, i32 0\n");
+        this.builder.append("\tstore i8** " + reg3 + ", i8*** " + reg2 + "\n");
+        return reg1;
     }
 
     @Override
-    public void visit(NewObjectExpr e) {
-
+    public String visit(NotExpr e) {
+        String reg1 = e.e().accept(this);
+        String xorReg = getRegister();
+        this.builder.append("\t" + xorReg + " = xor i1 1, " + reg1 + "\n");
+        return xorReg;
     }
 
     @Override
-    public void visit(NotExpr e) {
+    public String visit(IntAstType t) {
 
+        return null;
     }
 
     @Override
-    public void visit(IntAstType t) {
+    public String visit(BoolAstType t) {
 
+        return null;
     }
 
     @Override
-    public void visit(BoolAstType t) {
+    public String visit(IntArrayAstType t) {
 
+        return null;
     }
 
     @Override
-    public void visit(IntArrayAstType t) {
+    public String visit(RefType t) {
 
-    }
-
-    @Override
-    public void visit(RefType t) {
-
+        return null;
     }
 }

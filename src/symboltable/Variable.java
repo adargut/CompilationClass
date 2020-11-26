@@ -52,15 +52,15 @@ public class Variable {
         this.type = type;
     }
 
-    public Boolean getParam() {
+    public Boolean isParam() {
         return isParam;
     }
 
-    public Boolean getField() {
+    public Boolean isField() {
         return isField;
     }
 
-    public Boolean getLocalVariable() {
+    public Boolean isLocalVariable() {
         return isLocalVariable;
     }
 }
