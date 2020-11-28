@@ -21,6 +21,7 @@ public class LLVMGeneratorVisitor implements Visitor {
     private int loopLabel;
     private int ifLabel;
     private int andLabel;
+    private int arrayAllocLabel;
 
     public String getString() {
         return builder.toString();
@@ -34,6 +35,7 @@ public class LLVMGeneratorVisitor implements Visitor {
         this.loopLabel = 0;
         this.ifLabel = 0;
         this.andLabel = 0;
+        this.arrayAllocLabel = 0;
     }
 
     String getRegister() {
@@ -58,6 +60,12 @@ public class LLVMGeneratorVisitor implements Visitor {
         int retVal = this.andLabel;
         this.andLabel++;
         return "andcond" + retVal;
+    }
+
+    String getArrayAllocLabel() {
+        int retVal = this.arrayAllocLabel;
+        this.arrayAllocLabel++;
+        return "arr_alloc" + retVal;
     }
 
     @Override
@@ -169,13 +177,13 @@ public class LLVMGeneratorVisitor implements Visitor {
     public String visit(VarDecl varDecl) {
         Variable var = symbolTable.getVar(this.currentMethod, varDecl.name());
 
+        // todo: Is it possible that this is not a local variable?
         if (var.isLocalVariable()) {
             // Method scope
             Alloca alloca = Alloca.getInstance();
             alloca.setVariable(var);
             this.builder.append(alloca.generate());
         }
-
         return null;
     }
 
@@ -276,6 +284,7 @@ public class LLVMGeneratorVisitor implements Visitor {
         return null;
     }
 
+    //lv[index]=rv
     @Override
     public String visit(AssignArrayStatement assignArrayStatement) {
         // TODO
@@ -350,19 +359,50 @@ public class LLVMGeneratorVisitor implements Visitor {
         return resReg;
     }
 
+    //(A.a())[B.b()]
+    //(arrayExpr)[indexExpr]
     @Override
     public String visit(ArrayAccessExpr e) {
-        // TODO
-        e.indexExpr().accept(this);
-        e.arrayExpr().accept(this);
-        return null;
+        // TODO maybe need to bitcast
+        // TODO maybe the order needs to be switched?
+        String arr_ptr_reg = e.arrayExpr().accept(this);
+        String reg1 = e.indexExpr().accept(this);
+        String loaded_arr_ptr_reg = getRegister();
+        builder.append("\t"+loaded_arr_ptr_reg+" = load i32*, i32** "+arr_ptr_reg+"\n");
+        String cmp_with_zero_reg = getRegister();
+        builder.append("\t" + cmp_with_zero_reg + " = icmp slt i32 "+reg1+", 0"+ "\n");
+        String oob_0_bad_label = getArrayAllocLabel();
+        String oob_0_good_label = getArrayAllocLabel();
+        builder.append("\tbr i1 "+cmp_with_zero_reg+", label "+oob_0_bad_label+", label "+oob_0_good_label+ "\n");
+        builder.append(oob_0_bad_label+":"+ "\n");
+        builder.append("\tcall void @throw_oob()\n");
+        builder.append("\tbr label "+oob_0_good_label+"\n");
+        builder.append(oob_0_good_label+":"+ "\n");
+        String oob_max_bad_label = getArrayAllocLabel();
+        String oob_max_good_label = getArrayAllocLabel();
+        String arr_length_reg = getRegister();
+        builder.append("\t"+arr_length_reg+" = getelementptr i32, i32* "+ loaded_arr_ptr_reg + ", i32 0\n");
+        String loaded_arr_length_reg = getRegister();
+        builder.append("\t"+loaded_arr_length_reg+" = load i32, i32* "+arr_length_reg+"\n");
+        String cmp_with_max_reg = getRegister();
+        builder.append("\t" + cmp_with_max_reg + " = icmp sle i32 "+loaded_arr_length_reg+", "+reg1+ "\n");
+        builder.append("\tbr i1 "+cmp_with_max_reg+", label "+oob_max_bad_label+", label "+oob_max_good_label+ "\n");
+        builder.append(oob_max_bad_label+":"+ "\n");
+        builder.append("\tcall void @throw_oob()\n");
+        builder.append("\tbr label "+oob_max_good_label+"\n");
+        builder.append(oob_max_good_label+":"+ "\n");
+        String physical_index_reg = getRegister();
+        builder.append("\t"+physical_index_reg+" = add i32 "+reg1+", 1\n");
+        String ptr_to_arr_element_reg = getRegister();
+        builder.append("\t"+ptr_to_arr_element_reg + " = getelementptr i32, i32* " + loaded_arr_ptr_reg + ", i32 "+physical_index_reg+"\n");
+        return ptr_to_arr_element_reg;
     }
 
+    //arrayExpr.length
+    //todo: the pointer to the array points to the array length, check if cast/load is needed
     @Override
     public String visit(ArrayLengthExpr e) {
-        // TODO
-        e.arrayExpr().accept(this);
-        return null;
+        return e.arrayExpr().accept(this);
     }
 
     @Override
@@ -432,9 +472,30 @@ public class LLVMGeneratorVisitor implements Visitor {
         return "%this";
     }
 
+    //todo test
+    //new int[lengthExpr]
     @Override
     public String visit(NewIntArrayExpr e) {
-        return null;
+        String reg0 = e.lengthExpr().accept(this);
+        String arr_length_reg = getRegister();
+        builder.append("\t" + arr_length_reg + " = load i32, i32* "+reg0+ "\n");
+        String cmp_with_zero_reg = getRegister();
+        builder.append("\t" + cmp_with_zero_reg + " = icmp slt i32 "+arr_length_reg+", 0"+ "\n");
+        String arr_alloc_bad = getArrayAllocLabel();
+        String arr_alloc_good = getArrayAllocLabel();
+        builder.append("\tbr i1 "+cmp_with_zero_reg+", label "+arr_alloc_bad+", label "+arr_alloc_good+ "\n");
+        builder.append(arr_alloc_bad+":"+ "\n");
+        builder.append("\tcall void @throw_oob()\n");
+        builder.append("\tbr label "+arr_alloc_good+"\n");
+        builder.append(arr_alloc_good+":"+ "\n");
+        String arr_physical_length_reg = getRegister();
+        builder.append("\t"+arr_physical_length_reg+" = add i32 "+arr_length_reg+", 1\n");
+        String ptr_to_array_reg = getRegister();
+        builder.append("\t"+ptr_to_array_reg+" = call i8* @calloc(i32 4, "+arr_physical_length_reg+"\n");
+        String ptr_to_array_reg_after_bitcast = getRegister();
+        builder.append("\t"+ptr_to_array_reg_after_bitcast+" = bitcast i8* "+ptr_to_array_reg+" to i32*\n");
+        builder.append("\tstore i32 "+arr_length_reg+", i32* "+ptr_to_array_reg_after_bitcast+"\n");
+        return ptr_to_array_reg_after_bitcast;
     }
 
     @Override
