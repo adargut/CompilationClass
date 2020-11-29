@@ -42,9 +42,11 @@ public class VTables {
                 }
 
                 switch (JavaTypeToLLVMType.getLLVMType(field.getType())) {
-                    case i32 -> offset += 4;
-                    case i1 -> offset += 1;
-                    default -> offset += 8;
+                    case i32: offset += 4;
+                    break;
+                    case i1: offset += 1;
+                    break;
+                    default: offset += 8;
                 }
             }
 
@@ -59,9 +61,11 @@ public class VTables {
                 Variable field = (Variable) entry.getValue();
 
                 switch (JavaTypeToLLVMType.getLLVMType(field.getType())) {
-                    case i32 -> size += 4;
-                    case i1 -> size += 1;
-                    default -> size += 8;
+                    case i32: size += 4;
+                    break;
+                    case i1: size += 1;
+                    break;
+                    default: size += 8;
                 }
             }
 
