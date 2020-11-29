@@ -116,14 +116,12 @@ public class SymbolTable {
         for (Map.Entry mapElement : this.classes.entrySet()) {
             String className = (String) mapElement.getKey();
             Class currentClass = ((Class) mapElement.getValue());
-
             Method method = currentClass.getMethod(methodName);
 
             if (method != null && method.getLineNumber() != null && method.getLineNumber().equals(lineNumber)) {
                 return currentClass;
             }
         }
-
         return null;
     }
 

@@ -291,9 +291,65 @@ public class LLVMGeneratorVisitor implements Visitor {
     @Override
     public String visit(AssignArrayStatement assignArrayStatement) {
         // TODO
-        assignArrayStatement.lv();
-        assignArrayStatement.index().accept(this);
-        assignArrayStatement.rv().accept(this);
+        Variable var;
+
+        if (this.currentMethod != null) {
+            // Method scope - assigning a local var or a param
+            var = symbolTable.getVar(this.currentMethod, assignArrayStatement.lv());
+        }
+        else {
+            // Class scope - assigning a field
+            var = symbolTable.getVar(this.currentClass, assignArrayStatement.lv());
+        }
+
+        if (var == null) {
+            throw new RuntimeException(String.format("Variable %s was not found!", assignArrayStatement.lv()));
+        }
+        String array_reg = "";
+        if (var.isParam() || var.isLocalVariable()) {
+            //todo check this is correct
+            array_reg = "%"+assignArrayStatement.lv();
+        }
+
+        else {
+            // Var is a field
+            String array_reg_temp1 = getRegister();
+            String array_reg_temp2 = getRegister();
+            array_reg = getRegister();
+            VTables.ClassVTable classVTable = this.vTables.classesTables.get(this.currentClass.getName());
+            this.builder.append("\t" + array_reg_temp1 + " = getelementptr i8, i8* %this, i32 " + classVTable.getVarOffset(var.getSymbol()) + "\n");
+            this.builder.append("\t" + array_reg_temp2 + " = bitcast i8* " + array_reg_temp1 + " to i32**" + "\n");
+            this.builder.append("\tload i32*, i32** "+array_reg_temp2+"\n");
+        }
+        String index_reg = assignArrayStatement.index().accept(this);
+        String rv_reg = assignArrayStatement.rv().accept(this);
+        String cmp_with_zero_reg = getRegister();
+        builder.append("\t" + cmp_with_zero_reg + " = icmp slt i32 "+index_reg+", 0"+ "\n");
+        String oob_0_bad_label = getArrayAllocLabel();
+        String oob_0_good_label = getArrayAllocLabel();
+        builder.append("\tbr i1 "+cmp_with_zero_reg+", label "+oob_0_bad_label+", label "+oob_0_good_label+ "\n");
+        builder.append(oob_0_bad_label+":"+ "\n");
+        builder.append("\tcall void @throw_oob()\n");
+        builder.append("\tbr label "+oob_0_good_label+"\n");
+        builder.append(oob_0_good_label+":"+ "\n");
+        String oob_max_bad_label = getArrayAllocLabel();
+        String oob_max_good_label = getArrayAllocLabel();
+        String arr_length_reg = getRegister();
+        builder.append("\t"+arr_length_reg+" = getelementptr i32, i32* "+ array_reg + ", i32 0\n");
+        String loaded_arr_length_reg = getRegister();
+        builder.append("\t"+loaded_arr_length_reg+" = load i32, i32* "+arr_length_reg+"\n");
+        String cmp_with_max_reg = getRegister();
+        builder.append("\t" + cmp_with_max_reg + " = icmp sle i32 "+loaded_arr_length_reg+", "+index_reg+ "\n");
+        builder.append("\tbr i1 "+cmp_with_max_reg+", label "+oob_max_bad_label+", label "+oob_max_good_label+ "\n");
+        builder.append(oob_max_bad_label+":"+ "\n");
+        builder.append("\tcall void @throw_oob()\n");
+        builder.append("\tbr label "+oob_max_good_label+"\n");
+        builder.append(oob_max_good_label+":"+ "\n");
+        String physical_index_reg = getRegister();
+        builder.append("\t"+physical_index_reg+" = add i32 "+index_reg+", 1\n");
+        String ptr_to_arr_element_reg = getRegister();
+        builder.append("\t"+ptr_to_arr_element_reg + " = getelementptr i32, i32* " + array_reg + ", i32 "+physical_index_reg+"\n");
+        builder.append("\tstore i32 "+rv_reg+", i32* "+ptr_to_arr_element_reg+"\n");
         return null;
     }
 
@@ -409,56 +465,60 @@ public class LLVMGeneratorVisitor implements Visitor {
         return e.arrayExpr().accept(this);
     }
 
+    //fixme
     // e.(ownerExpression).methodId(args : e.actuals)
     @Override
     public String visit(MethodCallExpr e) {
         // Bitcast owner register
-        var ownerRegister = e.ownerExpr();
-        var castVtable = getRegister();
-        builder.append(castVtable + " = bitcast i8* " + ownerRegister + " to i8***");
-
-        // Get actual register to vtable
-        var actualVtableReg = getRegister();
-        builder.append(actualVtableReg + " = load i8**, i8***" + castVtable);
-
-        // Read into vtable to get function pointer
-        var functionRegister = getRegister();
-        var classVTable = this.vTables.classesTables.get(this.currentClass.getName());
-        var offset = classVTable.getMethodOffset(e.methodId());
-        builder.append(functionRegister + " = getelementptr i8*, i8** " + actualVtableReg + ", i32 " + offset);
-
-        // Cast the function pointer from i8* to correct type
-        var castFunctionRegister = getRegister();
-        var functionSignature = "";
-        var lineNumber = e.lineNumber;
-        var methodName = e.methodId();
-        var method = symbolTable.getMethod(methodName, lineNumber);
-        var returnType = method.getMethodDecl().returnType();
-        functionSignature +=  "i8* " + functionRegister + " to " + returnType;
-        var args = "(";
-        for (Map.Entry arg : method.getParams().entrySet()) {
-            Variable param = (Variable) arg.getValue();
-            args += JavaTypeToLLVMType.getLLVMType(param.getType());
-            args += ", ";
-        }
-        args = args.substring(0, args.length() - 2);
-        args += ")*";
-        functionSignature += args;
-        builder.append(castFunctionRegister + " = bitcast " + functionSignature + "\n");
-
-        // Perform the call on the function register
-        args = "(";
-        List<Variable> paramsArray = method.getParamsArray();
-        int i = 0;
-        for (Expr arg : e.actuals()) {
-            args += JavaTypeToLLVMType.getLLVMType(paramsArray.get(i).getType());
-            args += " " + arg.accept(this) + ", ";
-        }
-        args = args.substring(0, args.length() - 2); // remove redundant ", "
-        args += ")";
-        var callRegister = getRegister();
-        builder.append(callRegister + " = call " + returnType + castFunctionRegister + args + "\n");
-        return callRegister;
+//        var ownerRegister = e.ownerExpr();
+//        var castVtable = getRegister();
+//        builder.append(castVtable + " = bitcast i8* " + ownerRegister + " to i8***");
+//
+//        // Get actual register to vtable
+//        var actualVtableReg = getRegister();
+//        builder.append(actualVtableReg + " = load i8**, i8***" + castVtable);
+//
+//        // Read into vtable to get function pointer
+//        var functionRegister = getRegister();
+//        var lineNumber = e.lineNumber;
+//        var methodName = e.methodId();
+//        var _class = symbolTable.getClassOfMethod(methodName, lineNumber).getName();
+//        var classVTable = this.vTables.classesTables.get(_class);
+//        var offset = classVTable.getMethodOffset(e.methodId());
+//        builder.append(functionRegister + " = getelementptr i8*, i8** " + actualVtableReg + ", i32 " + offset);
+//
+//        // Cast the function pointer from i8* to correct type
+//        var castFunctionRegister = getRegister();
+//        var functionSignature = "";
+//
+//        var method = symbolTable.getMethod(methodName, lineNumber);
+//        var returnType = method.getMethodDecl().returnType();
+//        functionSignature +=  "i8* " + functionRegister + " to " + returnType;
+//        var args = "(";
+//        for (Map.Entry arg : method.getParams().entrySet()) {
+//            Variable param = (Variable) arg.getValue();
+//            args += JavaTypeToLLVMType.getLLVMType(param.getType());
+//            args += ", ";
+//        }
+//        args = args.substring(0, args.length() - 2);
+//        args += ")*";
+//        functionSignature += args;
+//        builder.append(castFunctionRegister + " = bitcast " + functionSignature + "\n");
+//
+//        // Perform the call on the function register
+//        args = "(";
+//        List<Variable> paramsArray = method.getParamsArray();
+//        int i = 0;
+//        for (Expr arg : e.actuals()) {
+//            args += JavaTypeToLLVMType.getLLVMType(paramsArray.get(i).getType());
+//            args += " " + arg.accept(this) + ", ";
+//        }
+//        args = args.substring(0, args.length() - 2); // remove redundant ", "
+//        args += ")";
+//        var callRegister = getRegister();
+//        builder.append(callRegister + " = call " + returnType + castFunctionRegister + args + "\n");
+//        return callRegister;
+        return null;
     }
 
     @Override

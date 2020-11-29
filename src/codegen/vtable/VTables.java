@@ -34,9 +34,11 @@ public class VTables {
 
             for (Map.Entry<String, Method> entry : methodsTable.entrySet()) {
                 var _methodName = entry.getKey();
+                System.out.println(_methodName);
                 if (_methodName.equals(methodName)) return offset;
                 offset += 8;
             }
+            System.out.println("XXX" + methodsTable.entrySet().size());
             throw new RuntimeException("Method " + methodName + " was not found in the vtable!");
         }
 
