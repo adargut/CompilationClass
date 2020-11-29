@@ -288,6 +288,7 @@ public class LLVMGeneratorVisitor implements Visitor {
     @Override
     public String visit(AssignArrayStatement assignArrayStatement) {
         // TODO
+        assignArrayStatement.lv();
         assignArrayStatement.index().accept(this);
         assignArrayStatement.rv().accept(this);
         return null;
@@ -476,9 +477,7 @@ public class LLVMGeneratorVisitor implements Visitor {
     //new int[lengthExpr]
     @Override
     public String visit(NewIntArrayExpr e) {
-        String reg0 = e.lengthExpr().accept(this);
-        String arr_length_reg = getRegister();
-        builder.append("\t" + arr_length_reg + " = load i32, i32* "+reg0+ "\n");
+        String arr_length_reg = e.lengthExpr().accept(this);
         String cmp_with_zero_reg = getRegister();
         builder.append("\t" + cmp_with_zero_reg + " = icmp slt i32 "+arr_length_reg+", 0"+ "\n");
         String arr_alloc_bad = getArrayAllocLabel();
@@ -491,7 +490,7 @@ public class LLVMGeneratorVisitor implements Visitor {
         String arr_physical_length_reg = getRegister();
         builder.append("\t"+arr_physical_length_reg+" = add i32 "+arr_length_reg+", 1\n");
         String ptr_to_array_reg = getRegister();
-        builder.append("\t"+ptr_to_array_reg+" = call i8* @calloc(i32 4, "+arr_physical_length_reg+"\n");
+        builder.append("\t"+ptr_to_array_reg+" = call i8* @calloc(i32 4, "+arr_physical_length_reg+")\n");
         String ptr_to_array_reg_after_bitcast = getRegister();
         builder.append("\t"+ptr_to_array_reg_after_bitcast+" = bitcast i8* "+ptr_to_array_reg+" to i32*\n");
         builder.append("\tstore i32 "+arr_length_reg+", i32* "+ptr_to_array_reg_after_bitcast+"\n");
