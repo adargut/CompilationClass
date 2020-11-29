@@ -29,6 +29,17 @@ public class VTables {
             methodsTable = new LinkedHashMap<>();
         }
 
+        public int getMethodOffset(String methodName) {
+            int offset = 0;
+
+            for (Map.Entry<String, Method> entry : methodsTable.entrySet()) {
+                var _methodName = entry.getKey();
+                if (_methodName.equals(methodName)) return offset;
+                offset += 8;
+            }
+            throw new RuntimeException("Method " + methodName + " was not found in the vtable!");
+        }
+
         public int getVarOffset(String symbol) {
             // We are starting with +8 because the first 8 bytes are for the vtable ptr
             int offset = 8;

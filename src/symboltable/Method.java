@@ -5,6 +5,7 @@ import ast.MethodDecl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Method {
@@ -14,6 +15,7 @@ public class Method {
     private MethodDecl methodDecl;
     private Class parentClass;
     private final HashMap<String, Variable> params; // todo why is this a hashmap and not hashset (or array)?
+    private final List<Variable> paramsArray; // todo check if this is a param?
     private final HashMap<String, Variable> variables;
     private final ArrayList<MethodCallExpr> calls;
 
@@ -23,6 +25,7 @@ public class Method {
         this.parentClass = parentClass;
         this.variables = new HashMap<String, Variable>();
         this.params = new HashMap<String, Variable>();
+        this.paramsArray = new ArrayList<>();
         this.calls = new ArrayList<MethodCallExpr>();
     }
 
@@ -90,6 +93,7 @@ public class Method {
     public Boolean addParam(Variable variable) {
         if (this.params.containsKey(variable.getSymbol())) return false;
         this.params.put(variable.getSymbol(), variable);
+        this.paramsArray.add(variable);
         return true;
     }
 
@@ -113,5 +117,9 @@ public class Method {
 
     public HashMap<String, Variable> getParams() {
         return this.params;
+    }
+
+    public List<Variable> getParamsArray() {
+        return this.paramsArray;
     }
 }
