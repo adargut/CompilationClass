@@ -3,8 +3,7 @@ package symboltable;
 import ast.ClassDecl;
 import utils.TreeNode;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 public class Class {
     private String name;
@@ -55,11 +54,43 @@ public class Class {
     }
 
     public HashMap<String, Method> getMethods() {
-        return methods;
+        // Return the methods sorted by the line number
+        List<Map.Entry<String, Method> > list =
+                new LinkedList<Map.Entry<String, Method> >(methods.entrySet());
+
+        Collections.sort(list, new Comparator<Map.Entry<String, Method> >() {
+            public int compare(Map.Entry<String, Method> method1,
+                               Map.Entry<String, Method> method2)
+            {
+                return (method1.getValue().getLineNumber()).compareTo(method2.getValue().getLineNumber());
+            }
+        });
+
+        HashMap<String, Method> temp = new LinkedHashMap<String, Method>();
+        for (Map.Entry<String, Method> entry : list) {
+            temp.put(entry.getKey(), entry.getValue());
+        }
+        return temp;
     }
 
     public HashMap<String, Variable> getFields() {
-        return fields;
+        // Return the fields sorted by the line number
+        List<Map.Entry<String, Variable> > list =
+                new LinkedList<Map.Entry<String, Variable> >(fields.entrySet());
+
+        Collections.sort(list, new Comparator<Map.Entry<String, Variable> >() {
+            public int compare(Map.Entry<String, Variable> o1,
+                               Map.Entry<String, Variable> o2)
+            {
+                return (o1.getValue().getLineNumber()).compareTo(o2.getValue().getLineNumber());
+            }
+        });
+
+        HashMap<String, Variable> temp = new LinkedHashMap<String, Variable>();
+        for (Map.Entry<String, Variable> entry : list) {
+            temp.put(entry.getKey(), entry.getValue());
+        }
+        return temp;
     }
 
     public String getName() {
@@ -155,6 +186,7 @@ public class Class {
 
         // Add the methods of the current class (if they override any method from one of the parents
         // then the relevant key will be updated, but the order will remain)
+        // Note - the methods of the current class are ordered by their line number
         for (Method method: curr.getMethods().values()) {
             methodsMap.put(method.getName(), method);
         }
@@ -190,6 +222,7 @@ public class Class {
         // Add the fields of the current class (if they override any fields from one of the parents
         // then the relevant key will be updated, but the order will remain)
         for (Variable field: curr.getFields().values()) {
+            // Note - the fields of the current class are ordered by their line number
             variablesMap.put(field.getSymbol(), field);
         }
 

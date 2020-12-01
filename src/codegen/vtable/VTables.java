@@ -34,11 +34,11 @@ public class VTables {
 
             for (Map.Entry<String, Method> entry : methodsTable.entrySet()) {
                 var _methodName = entry.getKey();
-                System.out.println(_methodName);
                 if (_methodName.equals(methodName)) return offset;
-                offset += 8;
+                // TODO: From the examples, seems like methods offset is like indexes in array (as opposed to variables
+                // TODO: where we actually count the bytes so we need to increase by 1 and not by 8)
+                offset += 1;
             }
-            System.out.println("XXX" + methodsTable.entrySet().size());
             throw new RuntimeException("Method " + methodName + " was not found in the vtable!");
         }
 
