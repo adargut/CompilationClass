@@ -151,7 +151,7 @@ public class VTables {
                     builder.append(", " + JavaTypeToLLVMType.getLLVMType(param.getType()));
                 }
 
-                builder.append(")* @" + className + "." + methodName + " to i8*)");
+                builder.append(")* @" + method.getParentClass().getName() + "." + methodName + " to i8*)");
                 isFirst = false;
             }
 

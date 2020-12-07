@@ -641,7 +641,6 @@ public class LLVMGeneratorVisitor implements Visitor {
         return "%this";
     }
 
-    //todo test
     //new int[lengthExpr]
     @Override
     public String visit(NewIntArrayExpr e) {
@@ -683,7 +682,7 @@ public class LLVMGeneratorVisitor implements Visitor {
     @Override
     public String visit(NotExpr e) {
         String reg1 = e.e().accept(this);
-        // TODO: In treeVisitor.java exapmle seems like we need to use sub. Check this.
+        // TODO: In treeVisitor.java example seems like we need to use sub. Check this.
 //        String xorReg = getRegister();
 //        this.builder.append("\t" + xorReg + " = xor i1 1, " + reg1 + "\n");
 //        return xorReg;
