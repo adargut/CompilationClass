@@ -144,10 +144,7 @@ public class VTables {
                 builder.append("\ti8* bitcast (" + JavaTypeToLLVMType.getLLVMType(method.getMethodDecl().returnType()) + " (i8*");
 
                 // Params
-                for (Map.Entry methodParam : method.getParams().entrySet()) {
-                    String paramName = (String) methodParam.getKey();
-                    Variable param = (Variable) methodParam.getValue();
-
+                for (Variable param : method.getParamsArray()) {
                     builder.append(", " + JavaTypeToLLVMType.getLLVMType(param.getType()));
                 }
 

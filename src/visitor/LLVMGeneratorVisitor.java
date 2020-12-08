@@ -466,7 +466,10 @@ public class LLVMGeneratorVisitor implements Visitor {
     //todo: the pointer to the array points to the array length, check if cast/load is needed
     @Override
     public String visit(ArrayLengthExpr e) {
-        return e.arrayExpr().accept(this);
+        String resReg = e.arrayExpr().accept(this);
+        String tempReg = getRegister();
+        builder.append("\t" + tempReg + " = load i32, i32* " + resReg + "\n");
+        return tempReg;
     }
 
     //fixme
@@ -551,7 +554,7 @@ public class LLVMGeneratorVisitor implements Visitor {
         var returnType = JavaTypeToLLVMType.getLLVMType(method.getMethodDecl().returnType());
         functionSignature += "i8* " + functionRegister + " to " + returnType + " ";
 
-        var args = Stream.of("(i8*", method.getParams().values().stream()
+        var args = Stream.of("(i8*", method.getParamsArray().stream()
                 .map(arg -> JavaTypeToLLVMType.getLLVMType(arg.getType()).toString())
                 .collect(Collectors.joining(", ")))
                 .filter(s -> s != null && !s.isEmpty())
