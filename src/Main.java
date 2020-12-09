@@ -24,6 +24,11 @@ public class Main {
             } else {
                 throw new UnsupportedOperationException("unknown input method " + inputMethod);
             }
+
+            // Create the full directory tree to outfilename
+            File file = new File(outfilename);
+            file.getParentFile().mkdirs();
+
             var outFile = new PrintWriter(outfilename);
             try {
                 BuildClassHierarchyVisitor buildClassHierarchyVisitor = new BuildClassHierarchyVisitor();
@@ -75,14 +80,6 @@ public class Main {
 
                     AstXMLSerializer xmlSerializer = new AstXMLSerializer();
                     xmlSerializer.serialize(prog, outfilename);
-
-//                    AstPrintVisitor astPrinter = new AstPrintVisitor();
-//                    astPrinter.visit(prog);
-//                    var outFile2 = new PrintWriter(outfilename + ".java");
-//                    outFile2.write(astPrinter.getString());
-//                    outFile2.flush();
-//                    outFile2.close();
-
 
                 } else {
                     throw new IllegalArgumentException("unknown command line action " + action);

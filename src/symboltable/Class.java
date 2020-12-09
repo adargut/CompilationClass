@@ -62,6 +62,13 @@ public class Class {
             public int compare(Map.Entry<String, Method> method1,
                                Map.Entry<String, Method> method2)
             {
+                if (method1.getValue().getLineNumber() == null ^ method2.getValue().getLineNumber() == null) {
+                    return method1.getValue().getLineNumber() == null ? -1 : 1;
+                }
+
+                if (method1.getValue().getLineNumber() == null && method2.getValue().getLineNumber() == null) {
+                    return 0;
+                }
                 return (method1.getValue().getLineNumber()).compareTo(method2.getValue().getLineNumber());
             }
         });
@@ -82,6 +89,13 @@ public class Class {
             public int compare(Map.Entry<String, Variable> o1,
                                Map.Entry<String, Variable> o2)
             {
+                if (o1.getValue().getLineNumber() == null ^ o2.getValue().getLineNumber() == null) {
+                    return o1.getValue().getLineNumber() == null ? -1 : 1;
+                }
+
+                if (o1.getValue().getLineNumber() == null && o2.getValue().getLineNumber() == null) {
+                    return 0;
+                }
                 return (o1.getValue().getLineNumber()).compareTo(o2.getValue().getLineNumber());
             }
         });
