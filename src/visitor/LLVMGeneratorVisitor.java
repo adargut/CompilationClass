@@ -293,7 +293,6 @@ public class LLVMGeneratorVisitor implements Visitor {
     //lv[index]=rv
     @Override
     public String visit(AssignArrayStatement assignArrayStatement) {
-        // TODO
         Variable var;
 
         if (this.currentMethod != null) {
@@ -310,7 +309,6 @@ public class LLVMGeneratorVisitor implements Visitor {
         String array_reg = "";
 
         if (var.isParam() || var.isLocalVariable()) {
-            //todo check this is correct
             array_reg = getRegister();
             this.builder.append("\t" + array_reg + " = load i32*, i32** %" + assignArrayStatement.lv() + "\n");
         }
@@ -427,8 +425,6 @@ public class LLVMGeneratorVisitor implements Visitor {
     //(arrayExpr)[indexExpr]
     @Override
     public String visit(ArrayAccessExpr e) {
-        // TODO maybe need to bitcast
-        // TODO maybe the order needs to be switched?
         String arr_ptr_reg = e.arrayExpr().accept(this);
         String reg1 = e.indexExpr().accept(this);
         String cmp_with_zero_reg = getRegister();
@@ -463,7 +459,6 @@ public class LLVMGeneratorVisitor implements Visitor {
     }
 
     //arrayExpr.length
-    //todo: the pointer to the array points to the array length, check if cast/load is needed
     @Override
     public String visit(ArrayLengthExpr e) {
         String resReg = e.arrayExpr().accept(this);
@@ -599,7 +594,6 @@ public class LLVMGeneratorVisitor implements Visitor {
 
     @Override
     public String visit(IdentifierExpr e) {
-        // TODO ?? No idea if this is really correct (even though seems to work on many examples)
         Variable variable;
 
         // Search for symbol upwards in symbol table to get type of the variable
@@ -685,7 +679,6 @@ public class LLVMGeneratorVisitor implements Visitor {
     @Override
     public String visit(NotExpr e) {
         String reg1 = e.e().accept(this);
-        // TODO: In treeVisitor.java example seems like we need to use sub. Check this.
 //        String xorReg = getRegister();
 //        this.builder.append("\t" + xorReg + " = xor i1 1, " + reg1 + "\n");
 //        return xorReg;

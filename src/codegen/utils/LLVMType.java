@@ -1,6 +1,5 @@
 package codegen.utils;
 
-// todo: Check if more types are needed (i32** etc)
 public enum LLVMType {
     i1("i1"),
     i8("i8"),
