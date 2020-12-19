@@ -4,21 +4,23 @@ import ast.*;
 import symboltable.Class;
 import symboltable.Method;
 import symboltable.SymbolTable;
-import symboltable.Variable;
 import utils.InitMap;
-import utils.TreeNode;
 
 public class ValidateInitVisitor implements Visitor {
     private Class currentClass;
     private Method currentMethod;
     private final SymbolTable symbolTable;
     private InitMap currentInitMap;
-    private boolean isValid;
+    private boolean valid;
 
     public ValidateInitVisitor(SymbolTable symbolTable) {
         this.currentMethod = null;
         this.symbolTable = symbolTable;
         this.currentClass = null;
+    }
+
+    public boolean isValid() {
+        return valid;
     }
 
     private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
@@ -28,7 +30,7 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(Program program) {
-        isValid = true;
+        valid = true;
         program.mainClass().accept(this);
 
         for (ClassDecl classdecl : program.classDecls()) {
@@ -115,7 +117,6 @@ public class ValidateInitVisitor implements Visitor {
     @Override
     public String visit(IfStatement ifStatement) {
         ifStatement.cond().accept(this);
-
         InitMap thenMap = new InitMap(currentInitMap); //copy
         InitMap elseMap = new InitMap(currentInitMap); //copy
         currentInitMap = thenMap;
@@ -139,12 +140,13 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(SysoutStatement sysoutStatement) {
+        sysoutStatement.arg().accept(this);
         return null;
     }
 
     @Override
     public String visit(AssignStatement assignStatement) {
-        if(currentMethod.getVar(assignStatement.lv()) != null) { //lv is a variable
+        if(currentMethod.getVar(assignStatement.lv()).isLocalVariable()) { //lv is a local variable
             currentInitMap.init(assignStatement.lv());
         }
         assignStatement.rv().accept(this);
@@ -153,7 +155,7 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(AssignArrayStatement assignArrayStatement) {
-        if(currentMethod.getVar(assignArrayStatement.lv()) != null) { //lv is a variable
+        if(currentMethod.getVar(assignArrayStatement.lv()).isLocalVariable()) { //lv is a local variable
             currentInitMap.init(assignArrayStatement.lv());
         }
         assignArrayStatement.index().accept(this);
@@ -230,8 +232,8 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(IdentifierExpr e) {
-        if(currentMethod.getVar(e.id()) != null) { //e is a variable
-            isValid = currentInitMap.isInit(e.id()); // if e is not init here the validation fails
+        if(currentMethod.getVar(e.id()).isLocalVariable()) { //e is a local variable
+            valid = currentInitMap.isInit(e.id()); // if e is not init here the validation fails
         }
         return null;
     }

@@ -1,7 +1,9 @@
 package symboltable;
 
+import ast.AstType;
 import ast.ClassDecl;
 import ast.MethodDecl;
+import ast.RefType;
 import utils.Tree;
 import utils.TreeNode;
 
@@ -74,7 +76,38 @@ public class SymbolTable {
         }
 
         return null;
+    }
 
+    public Method getOverridenMethod(Method method) {
+        Class current_class = method.getParentClass();
+        while(current_class.getParentName() != null){
+            current_class = getClass(current_class.getParentName());
+            if (current_class.getMethod(method.getName()) != null){
+                return current_class.getMethod(method.getName());
+            }
+        }
+        return null;
+    }
+
+    /** return true iff class1 is a subtype of class2 */
+    public boolean isSubclass(Class class1, Class class2){
+        Class current_class = class1;
+        while(current_class != null){
+            if (current_class.getName().equals(class2.getName())) return true;
+            current_class = getClass(current_class.getParentName());
+        }
+        return false;
+    }
+
+    /** return true iff type1 is a subtype of type2 */
+    public boolean isSubtype(AstType type1, AstType type2){
+        if (!type1.getClass().equals(type2.getClass())) return false;
+        if (type1 instanceof RefType){
+            Class class1 = getClass(((RefType) type1).id());
+            Class class2 = getClass(((RefType) type2).id());
+            return isSubclass(class1, class2);
+        }
+        return true;
     }
 
     public Variable getVarByNameAndLine(String varName, Integer lineNumber) {
