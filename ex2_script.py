@@ -24,5 +24,5 @@ for file in listdir(infolder):
 for file in listdir(outfolder):
     if file.endswith('.ll'):
         print(f"Running on {file}")
-        os.system(f'/usr/local/opt/llvm/bin/lli out1/{file} > {resultsfolder}/{file}.out')
-        os.system(f'/usr/local/opt/llvm/bin/lli expected/{file} > expected/{resultsfolder}/{file}.out')
+        os.system(f'lli out1/{file} > {resultsfolder}/{file}.out')
+        os.system(f'lli expected/{file} > expected/{resultsfolder}/{file}.out')

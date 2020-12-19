@@ -24,6 +24,10 @@ public class TreeNode<T> {
         this.children.addAll(children);
     }
 
+    public void clearChildren(){
+        this.children.clear();
+    }
+
     public List<TreeNode<T>> getChildren() {
         return children;
     }
