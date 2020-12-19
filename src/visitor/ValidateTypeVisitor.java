@@ -339,5 +339,72 @@ public class ValidateTypeVisitor implements Visitor{
         return null;
     }
 
+    @Override
+    public String visit(IntegerLiteralExpr e) {
+        return "int";
+    }
+
+    @Override
+    public String visit(TrueExpr e) {
+        return "bool";
+    }
+
+    @Override
+    public String visit(FalseExpr e) {
+        return "bool";
+    }
+
     //todo complete
+    @Override
+    public String visit(IdentifierExpr e) {
+        //return currentMethod.getVar(e.id()).getType();
+        return null;
+    }
+
+    public String visit(ThisExpr e) {
+        return currentClass.getName();
+    }
+
+    @Override
+    public String visit(NewIntArrayExpr e) {
+        if (!e.lengthExpr().accept(this).equals("int")) {
+            this.valid = false;
+            return null;
+        }
+        return "int[]";
+    }
+
+    @Override
+    public String visit(NewObjectExpr e) {
+        return e.classId();
+    }
+
+    @Override
+    public String visit(NotExpr e) {
+        if (!e.e().accept(this).equals("bool")){
+            this.valid = false;
+            return null;
+        }
+        return "bool";
+    }
+
+    @Override
+    public String visit(IntAstType t) {
+        return null;
+    }
+
+    @Override
+    public String visit(BoolAstType t) {
+        return null;
+    }
+
+    @Override
+    public String visit(IntArrayAstType t) {
+        return null;
+    }
+
+    @Override
+    public String visit(RefType t) {
+        return null;
+    }
 }
