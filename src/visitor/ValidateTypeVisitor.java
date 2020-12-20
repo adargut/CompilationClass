@@ -4,6 +4,7 @@ import ast.*;
 import symboltable.Class;
 import symboltable.Method;
 import symboltable.SymbolTable;
+import symboltable.Variable;
 import utils.InitMap;
 
 public class ValidateTypeVisitor implements Visitor{
@@ -327,9 +328,8 @@ public class ValidateTypeVisitor implements Visitor{
             valid = false;
             return null;
         }
-        //todo - traverse up to find method
-        Method method = owner_class.getMethod(e.methodId());
-        if(owner_class == null){
+        Method method = owner_class.findMethodUpwards(e.methodId());
+        if(method == null){
             valid = false;
             return null;
         }
@@ -354,11 +354,29 @@ public class ValidateTypeVisitor implements Visitor{
         return "bool";
     }
 
-    //todo complete
     @Override
     public String visit(IdentifierExpr e) {
-        //return currentMethod.getVar(e.id()).getType();
-        return null;
+        var varName = e.id();
+        AstType varType;
+        Variable var = currentClass.getVar(varName);
+
+        // Variable is a class field
+        if (var != null) {
+            varType = var.getType();
+        }
+        // Variable is local (method scope)
+        else {
+            var = currentMethod.getVar(varName);
+            varType = var.getType();
+        }
+
+        if (varType instanceof IntAstType) return "int";
+        if (varType instanceof IntArrayAstType) return "int[]";
+        if (varType instanceof BoolAstType) return "bool";
+
+        // Variable doesn't conform to any of the types MiniJava handles, probably should never happen
+        var err = "Type for variable " + varName + " could not be inferred or is illegal in MiniJava!";
+        throw new RuntimeException(err);
     }
 
     public String visit(ThisExpr e) {
