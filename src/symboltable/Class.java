@@ -1,6 +1,7 @@
 package symboltable;
 
 import ast.ClassDecl;
+import utils.Tree;
 import utils.TreeNode;
 
 import java.util.*;
@@ -168,6 +169,27 @@ public class Class {
             return this.fields.get(symbol);
         }
 
+        return null;
+    }
+
+    /**
+     * Check if given method is found in the current class, or in any of its parent classes up in the hierarchy.
+     * Used to check if method called from overriden class is legal.
+     * @param methodName name of the method located
+     * @return the first time the method is found upwards in the inheritance tree, or null if not found
+     */
+    public Method findMethodUpwards(String methodName) {
+        TreeNode<Class> classNode = this.node;
+
+        while (classNode != null) {
+            // Check if we located the desired method
+            var currClass = classNode.getData();
+            var method = currClass.getMethod(methodName);
+            if (method != null) return method;
+
+            // Couldn't find method, go upwards in tree
+            classNode = classNode.getParent();
+        }
         return null;
     }
 
