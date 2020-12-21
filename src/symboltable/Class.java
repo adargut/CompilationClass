@@ -1,7 +1,12 @@
 package symboltable;
 
 import ast.ClassDecl;
+<<<<<<< HEAD
 import utils.Tree;
+=======
+import semanticanalysis.SemanticError;
+import semanticanalysis.SemanticException;
+>>>>>>> a2a8c1c065c26a2e0b49a865bd4b51819544b16a
 import utils.TreeNode;
 
 import java.util.*;
@@ -133,13 +138,47 @@ public class Class {
     }
 
     public Boolean addMethod(Method method) {
+        if (method.getName().equals("this")) {
+            // this is a saved word - SEMANTIC ERROR #7
+            throw new SemanticException(
+                    SemanticError.THIS_IS_SAVED_WORD
+            );
+        }
+
+        // Overloading is not supported
         if (this.methods.containsKey(method.getName())) return false;
+
+        if (method.getOriginalMethod() == null) {
+            var allMethods = this.getAllMethods();
+            if (allMethods.containsKey(method.getName())) {
+                // Lookup the hierarchy for a method that the current method is overriding
+                // and set the originalMethod property of the current method to it
+                method.setOriginalMethod(allMethods.get(method.getName()));
+            }
+        }
         this.methods.put(method.getName(), method);
         return true;
     }
 
     public Boolean addMethod(String methodName, Method method) {
+        if (methodName.equals("this")) {
+            // this is a saved word - SEMANTIC ERROR #7
+            throw new SemanticException(
+                    SemanticError.THIS_IS_SAVED_WORD
+            );
+        }
+
         if (this.methods.containsKey(methodName)) return false;
+
+        if (method.getOriginalMethod() == null) {
+            var allMethods = this.getAllMethods();
+            if (allMethods.containsKey(methodName)) {
+                // Lookup the hierarchy for a method that the current method is overriding
+                // and set the originalMethod property of the current method to it
+                method.setOriginalMethod(allMethods.get(methodName));
+            }
+        }
+
         this.methods.put(methodName, method);
         return true;
     }
@@ -152,14 +191,45 @@ public class Class {
         return null;
     }
 
+    public Method getMethod(String methodName, Boolean searchInAncestors) {
+        if (searchInAncestors) {
+            var allMethods = getAllMethods();
+            if (allMethods.containsKey(methodName)) {
+                return allMethods.get(methodName);
+            }
+
+            return null;
+        }
+
+        else {
+            return getMethod(methodName);
+        }
+    }
+
     public Boolean addVar(Variable variable) {
-        if (this.fields.containsKey(variable.getSymbol())) return false;
+        if (variable.getSymbol().equals("this")) {
+            // this is a saved word - SEMANTIC ERROR #7
+            throw new SemanticException(
+                    SemanticError.THIS_IS_SAVED_WORD
+            );
+        }
+
+        // Check that the field was not declared before in the class or its ancestors
+        if (getVar(variable.getSymbol(), true) != null) return false;
         this.fields.put(variable.getSymbol(), variable);
         return true;
     }
 
     public Boolean addVar(String symbol, Variable variable) {
-        if (this.fields.containsKey(symbol)) return false;
+        if (symbol.equals("this")) {
+            // this is a saved word - SEMANTIC ERROR #7
+            throw new SemanticException(
+                    SemanticError.THIS_IS_SAVED_WORD
+            );
+        }
+
+        // Check that the field was not declared before in the class or its ancestors
+        if (getVar(symbol, true) != null) return false;
         this.fields.put(symbol, variable);
         return true;
     }
@@ -170,6 +240,21 @@ public class Class {
         }
 
         return null;
+    }
+
+    public Variable getVar(String symbol, Boolean searchInAncestors) {
+        if (searchInAncestors) {
+            var allVariables = getAllVariables();
+            if (allVariables.containsKey(symbol)) {
+                return allVariables.get(symbol);
+            }
+
+            return null;
+        }
+
+        else {
+            return getVar(symbol);
+        }
     }
 
     /**

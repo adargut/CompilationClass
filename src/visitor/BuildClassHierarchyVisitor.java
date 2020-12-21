@@ -1,6 +1,8 @@
 package visitor;
 
 import ast.*;
+import semanticanalysis.SemanticError;
+import semanticanalysis.SemanticException;
 import symboltable.Method;
 import symboltable.SymbolTable;
 import symboltable.Variable;
@@ -38,10 +40,12 @@ public class BuildClassHierarchyVisitor implements Visitor {
 
     @Override
     public String visit(ClassDecl classDecl) {
+        // Verify that a class with the name was not declared before
         if (!this.symbolTable.addClass(classDecl.name(), classDecl.superName(), classDecl, false)) {
-            throw new RuntimeException(
-                    String.format("A class with name %s was already declared!",
-                            classDecl.name())
+            // Class name is already in use - SEMANTIC ERROR #3
+            throw new SemanticException(
+                    String.format("Class %s already declared.", classDecl.name()),
+                    SemanticError.NAME_ALREADY_EXISTS
             );
         }
 
@@ -62,9 +66,10 @@ public class BuildClassHierarchyVisitor implements Visitor {
     @Override
     public String visit(MainClass mainClass) {
         if (!this.symbolTable.addClass(mainClass.name(), null, null, true)) {
-            throw new RuntimeException(
-                    String.format("A class with name %s was already declared!",
-                            mainClass.name())
+            // Class name is already in use - SEMANTIC ERROR #3
+            throw new SemanticException(
+                    String.format("Class %s already declared.", mainClass.name()),
+                    SemanticError.NAME_ALREADY_EXISTS
             );
         }
 
@@ -81,17 +86,17 @@ public class BuildClassHierarchyVisitor implements Visitor {
     @Override
     public String visit(MethodDecl methodDecl) {
         if (this.currentClass == null) {
-            throw new RuntimeException("Methods can't be declared outside of a class!");
+            throw new SemanticException(SemanticError.METHOD_OUTSIDE_CLASS);
         }
 
         // Add method to its class
         this.currentMethod = new Method(methodDecl.name(), methodDecl.lineNumber, this.currentClass, methodDecl);
 
         if (!this.currentClass.addMethod(this.currentMethod)) {
-            // Duplicate
-            throw new RuntimeException(
-                    String.format("A method with name %s was already declared (overloading is not supported)!",
-                            methodDecl.name())
+            // A method with the same name already exists in the current class (overloading) - SEMANTIC ERROR #5
+            throw new SemanticException(
+                    SemanticError.OVERLOADING_NOT_SUPPORTED,
+                    new String[]{methodDecl.name()}
             );
         }
 
@@ -117,13 +122,14 @@ public class BuildClassHierarchyVisitor implements Visitor {
     @Override
     public String visit(FormalArg formalArg) {
         if (this.currentMethod == null) {
-            throw new RuntimeException("Formals can't be declared outside of a method!");
+            throw new SemanticException(SemanticError.FORMAL_OUTSIDE_METHOD);
         }
 
         if (!this.currentMethod.addParam(new Variable(formalArg.name(), formalArg.type(), formalArg.lineNumber, false, false, true))) {
-            // A duplicate
-            throw new RuntimeException(
-                    String.format("Formal with symbol %s was already declared!", formalArg.name())
+            // Formal with the same name already exists in method declaration - SEMANTIC ERROR #24
+            throw new SemanticException(
+                    String.format("Formal with symbol %s was already declared.", formalArg.name()),
+                    SemanticError.NAME_ALREADY_EXISTS
             );
         }
 
@@ -136,17 +142,19 @@ public class BuildClassHierarchyVisitor implements Visitor {
         if (this.currentMethod != null) {
             // Local scope - inside a method
             if (!this.currentMethod.addVar(new Variable(varDecl.name(), varDecl.type(), varDecl.lineNumber, false, true, false))) {
-                // A duplicate
-                throw new RuntimeException(
-                        String.format("Variable with symbol %s was already declared!", varDecl.name())
+                // A variable or formal with the same name was already declared  - SEMANTIC ERROR #24
+                throw new SemanticException(
+                        String.format("Variable or formal with symbol %s was already declared.", varDecl.name()),
+                        SemanticError.NAME_ALREADY_EXISTS
                 );
             }
         } else {
             // Global scope - inside a class (a field)
             if (!this.currentClass.addVar(new Variable(varDecl.name(), varDecl.type(), varDecl.lineNumber, true, false, false))) {
-                // A duplicate
-                throw new RuntimeException(
-                        String.format("Field with symbol %s was already declared!", varDecl.name())
+                // A field with the same name already exists - SEMANTIC ERROR #4
+                throw new SemanticException(
+                        String.format("Field with symbol %s was already declared.", varDecl.name()),
+                        SemanticError.NAME_ALREADY_EXISTS
                 );
             }
         }

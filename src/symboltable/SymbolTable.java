@@ -4,6 +4,8 @@ import ast.AstType;
 import ast.ClassDecl;
 import ast.MethodDecl;
 import ast.RefType;
+import semanticanalysis.SemanticError;
+import semanticanalysis.SemanticException;
 import utils.Tree;
 import utils.TreeNode;
 
@@ -42,13 +44,17 @@ public class SymbolTable {
             TreeNode<Class> superNode = this.classHierarchy.findNode(parent);
 
             if (superNode == null) {
-                // The class this class is deriving from hasn't been declared yet.
-                throw new RuntimeException(
-                        String.format("Parent class %s was not found in hierarchy. Check if %s was declared after deriving class %s.",
-                                parent, parent, id
-                        )
+                // The class this class is deriving from hasn't been declared yet - SEMANTIC ERROR #1.
+                throw new SemanticException(
+                        SemanticError.PARENT_CLASS_DOESNT_EXISTS,
+                        new Object[]{parent, parent, id}
                 );
-            } else {
+            }
+            else if (superNode.getData().isMainClass()) {
+                // Main class cannot be extended - SEMANTIC ERROR #2
+                throw new SemanticException(SemanticError.MAIN_CLASS_CANNOT_BE_EXTENDED);
+            }
+            else {
                 superNode.addChild(currentClassNode);
             }
         }
@@ -101,12 +107,15 @@ public class SymbolTable {
 
     /** return true iff type1 is a subtype of type2 */
     public boolean isSubtype(AstType type1, AstType type2){
+        // Check if both types are of the same class
         if (!type1.getClass().equals(type2.getClass())) return false;
+
         if (type1 instanceof RefType){
             Class class1 = getClass(((RefType) type1).id());
             Class class2 = getClass(((RefType) type2).id());
             return isSubclass(class1, class2);
         }
+
         return true;
     }
 

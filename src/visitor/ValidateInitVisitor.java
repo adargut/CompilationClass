@@ -1,6 +1,8 @@
 package visitor;
 
 import ast.*;
+import semanticanalysis.SemanticError;
+import semanticanalysis.SemanticException;
 import symboltable.Class;
 import symboltable.Method;
 import symboltable.SymbolTable;
@@ -11,16 +13,11 @@ public class ValidateInitVisitor implements Visitor {
     private Method currentMethod;
     private final SymbolTable symbolTable;
     private InitMap currentInitMap;
-    private boolean valid;
 
     public ValidateInitVisitor(SymbolTable symbolTable) {
         this.currentMethod = null;
         this.symbolTable = symbolTable;
         this.currentClass = null;
-    }
-
-    public boolean isValid() {
-        return valid;
     }
 
     private void visitBinaryExpr(BinaryExpr e, String infixSymbol) {
@@ -30,7 +27,6 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(Program program) {
-        valid = true;
         program.mainClass().accept(this);
 
         for (ClassDecl classdecl : program.classDecls()) {
@@ -52,6 +48,7 @@ public class ValidateInitVisitor implements Visitor {
     @Override
     public String visit(ClassDecl classDecl) {
         this.currentClass = this.symbolTable.getClass(classDecl.name());
+        this.currentInitMap = new InitMap();
 
         for (var fieldDecl : classDecl.fields()) {
             fieldDecl.accept(this);
@@ -63,17 +60,16 @@ public class ValidateInitVisitor implements Visitor {
 
         // Backtrack - exit class
         this.currentClass = null;
+        this.currentInitMap = null;
         return null;
     }
 
     @Override
     public String visit(MethodDecl methodDecl) {
-        if (this.currentClass == null) {
-            throw new RuntimeException("Methods can't be declared outside of a class!");
-        }
-
         this.currentMethod = symbolTable.getMethod(methodDecl.name(), methodDecl.lineNumber);
-        currentInitMap = new InitMap();
+        InitMap classMap = new InitMap(currentInitMap);
+        InitMap methodMap = new InitMap(currentInitMap);
+        this.currentInitMap = methodMap;
 
         for (var formal : methodDecl.formals()) {
             formal.accept(this);
@@ -91,7 +87,7 @@ public class ValidateInitVisitor implements Visitor {
 
         // Backtrack - exit method
         this.currentMethod = null;
-        this.currentInitMap = null;
+        this.currentInitMap = classMap;
         return null;
     }
 
@@ -232,8 +228,20 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(IdentifierExpr e) {
-        if(currentMethod.getVar(e.id()).isLocalVariable()) { //e is a local variable
-            valid = currentInitMap.isInit(e.id()); // if e is not init here the validation fails
+        var variable = currentMethod.getVar(e.id());
+        if(variable != null && variable.isLocalVariable()) { //e is a local variable
+            if (!currentInitMap.isInit(e.id())) {
+                // if e is not init here the validation fails
+                // Obj is not definitely initialized - SEMANTIC ERROR #15
+                throw new SemanticException(
+                        SemanticError.OBJ_NOT_INITIALIZED,
+                        new String[] {
+                                e.id(),
+                                this.currentClass != null ? this.currentClass.getName() : "",
+                                this.currentMethod != null ? this.currentMethod.getName() : ""
+                        }
+                );
+            }
         }
         return null;
     }
