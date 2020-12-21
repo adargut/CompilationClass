@@ -6,6 +6,7 @@ import symboltable.Method;
 import symboltable.SymbolTable;
 import symboltable.Variable;
 import utils.InitMap;
+import java.util.stream.IntStream;
 
 public class ValidateTypeVisitor implements Visitor{
     private Class currentClass;
@@ -333,9 +334,24 @@ public class ValidateTypeVisitor implements Visitor{
             valid = false;
             return null;
         }
-        for (Expr arg : e.actuals()) {
-            arg.accept(this);
+
+        var actuals = e.actuals();
+        var methodArgs = method.getMethodDecl().formals();
+
+        // Actual args for method call have incorrect length
+        if (actuals.size() != methodArgs.size()) {
+            valid = false;
+            return null;
         }
+
+        // TODO check actuals for non-primitive types? this is only for primitives now.. also if non-primitive, can it be a subtype?
+        // Check if actuals given to method call match the type in method signature
+        boolean invalidActuals =
+                IntStream.range(0, actuals.size())
+                    .mapToObj(i -> new String[]{actuals.get(i).accept(this), methodArgs.get(i).stringType()})
+                    .anyMatch(ele -> !ele[0].equals(ele[1]));
+
+        if (invalidActuals) valid = false;
         return null;
     }
 
