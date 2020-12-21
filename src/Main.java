@@ -1,6 +1,7 @@
 import ast.*;
 import codegen.vtable.VTable;
 import codegen.vtable.VTables;
+import semanticanalysis.SemanticException;
 import symboltable.SymbolTable;
 import visitor.*;
 
@@ -31,23 +32,42 @@ public class Main {
 
             var outFile = new PrintWriter(outfilename);
             try {
-                BuildClassHierarchyVisitor buildClassHierarchyVisitor = new BuildClassHierarchyVisitor();
-                buildClassHierarchyVisitor.visit(prog);
-
-                SymbolTable symbolTable = buildClassHierarchyVisitor.getSymbolTable();
-
                 if (action.equals("marshal")) {
                     AstXMLSerializer xmlSerializer = new AstXMLSerializer();
                     xmlSerializer.serialize(prog, outfilename);
+
                 } else if (action.equals("print")) {
                     AstPrintVisitor astPrinter = new AstPrintVisitor();
                     astPrinter.visit(prog);
                     outFile.write(astPrinter.getString());
 
                 } else if (action.equals("semantic")) {
-                    throw new UnsupportedOperationException("TODO - Ex. 3");
+                    try {
+                        BuildClassHierarchyVisitor buildClassHierarchyVisitor = new BuildClassHierarchyVisitor();
+                        buildClassHierarchyVisitor.visit(prog);
+                        SymbolTable symbolTable = buildClassHierarchyVisitor.getSymbolTable();
+
+                        ValidateTypeVisitor validateTypeVisitor = new ValidateTypeVisitor(symbolTable);
+                        validateTypeVisitor.visit(prog);
+
+                        ValidateInitVisitor validateInitVisitor = new ValidateInitVisitor(symbolTable);
+                        validateInitVisitor.visit(prog);
+
+                        outFile.write("OK\n");
+                    }
+
+                    catch (SemanticException e){
+                        System.out.println(String.format("ERROR: %s, Message: %s",
+                                e.getErrorCode().name(),
+                                e.getMessage()));
+                        outFile.write("ERROR\n");
+                    }
 
                 } else if (action.equals("compile")) {
+                    BuildClassHierarchyVisitor buildClassHierarchyVisitor = new BuildClassHierarchyVisitor();
+                    buildClassHierarchyVisitor.visit(prog);
+                    SymbolTable symbolTable = buildClassHierarchyVisitor.getSymbolTable();
+
                     VTables vTables = VTables.createVTables(symbolTable);
                     LLVMGeneratorVisitor llvmGeneratorVisitor = new LLVMGeneratorVisitor(vTables, symbolTable);
                     llvmGeneratorVisitor.visit(prog);
@@ -56,7 +76,6 @@ public class Main {
                 } else if (action.equals("rename")) {
                     var type = args[2];
                     var originalName = args[3];
-                    // TODO: Validate input
                     var originalLine = Integer.parseInt(args[4]);
                     var newName = args[5];
 
@@ -68,6 +87,10 @@ public class Main {
                     } else {
                         throw new IllegalArgumentException("unknown rename type " + type);
                     }
+
+                    BuildClassHierarchyVisitor buildClassHierarchyVisitor = new BuildClassHierarchyVisitor();
+                    buildClassHierarchyVisitor.visit(prog);
+                    SymbolTable symbolTable = buildClassHierarchyVisitor.getSymbolTable();
 
                     if (isMethod) {
                         MethodRenameVisitor methodRenameVisitor = new MethodRenameVisitor(newName, symbolTable, originalName, originalLine);

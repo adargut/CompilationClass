@@ -26,8 +26,9 @@ public abstract class VariableIntroduction extends AstNode {
 
     public String stringType() {
         if (type.t instanceof IntAstType) return "int";
-        if (type.t instanceof IntArrayAstType) return "int[]";
-        if (type.t instanceof BoolAstType) return "bool";
+        else if (type.t instanceof IntArrayAstType) return "int[]";
+        else if (type.t instanceof BoolAstType) return "bool";
+        else return "ref";
     }
 
     public String name() {
