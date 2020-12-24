@@ -76,7 +76,8 @@ public class SymbolTable {
 
             Method method = currentClass.getMethod(methodName);
 
-            if (method != null && method.getLineNumber() != null && method.getLineNumber().equals(lineNumber)) {
+            if (method != null && (lineNumber == null ||
+                    (method.getLineNumber() != null && method.getLineNumber().equals(lineNumber)))) {
                 return method;
             }
         }

@@ -293,7 +293,20 @@ public class ValidateTypeVisitor implements Visitor{
     public String visit(AssignStatement assignStatement) {
         AstType lv_type;
         AstType rv_type;
-        Variable lv = currentMethod.getVar(assignStatement.lv());
+        Variable lv = symbolTable.getVar(currentMethod, assignStatement.lv());
+
+        if (lv == null) {
+            // Variable is not found in current scope - SEMANTIC ERROR #12
+            throw new SemanticException(
+                    String.format("Var %s doesn't exist in current scope (class: %s, method: %s).",
+                            assignStatement.lv(),
+                            this.currentClass != null ? this.currentClass.getName() : "",
+                            this.currentMethod != null ? this.currentMethod.getName() : ""
+                    ),
+                    SemanticError.OBJ_DOESNT_EXIST
+            );
+        }
+
         lv_type = lv.getType();
         rv_type = getVarType(assignStatement.rv().accept(this));
 
@@ -317,7 +330,21 @@ public class ValidateTypeVisitor implements Visitor{
     public String visit(AssignArrayStatement assignArrayStatement) {
         AstType lv_type;
         AstType rv_type;
-        Variable lv = currentMethod.getVar(assignArrayStatement.lv());
+
+        Variable lv = symbolTable.getVar(currentMethod, assignArrayStatement.lv());
+
+        if (lv == null) {
+            // Variable is not found in current scope - SEMANTIC ERROR #12
+            throw new SemanticException(
+                    String.format("Var %s doesn't exist in current scope (class: %s, method: %s).",
+                            assignArrayStatement.lv(),
+                            this.currentClass != null ? this.currentClass.getName() : "",
+                            this.currentMethod != null ? this.currentMethod.getName() : ""
+                    ),
+                    SemanticError.OBJ_DOESNT_EXIST
+            );
+        }
+
         lv_type = lv.getType();
         rv_type = getVarType(assignArrayStatement.rv().accept(this));
 
@@ -337,11 +364,14 @@ public class ValidateTypeVisitor implements Visitor{
 
         String index_type = assignArrayStatement.index().accept(this);
 
-        if (!(index_type.equals(VarType.INT_ARRAY.getType()))) {
+        if (!(index_type.equals(VarType.INT.getType()))) {
             // Index is not an int - SEMANTIC ERROR #23
             throw new SemanticException(
-                    SemanticError.INVALID_ARRAY_INDEX,
-                    new String[]{index_type}
+                    String.format("Invalid index type (class: %s, method: %s).Got: %s, expected: int.",
+                    this.currentClass != null ? this.currentClass.getName() : "",
+                    this.currentMethod != null ? this.currentMethod.getName() : "",
+                    index_type),
+                    SemanticError.INVALID_ARRAY_INDEX
             );
         }
 
@@ -536,7 +566,7 @@ public class ValidateTypeVisitor implements Visitor{
         if (!(array_type.equals(VarType.INT_ARRAY.getType()))){
             // object is not an array - SEMANTIC ERROR #22
             throw new SemanticException(
-                    String.format("Type mismatch (class: %s, method: %s). Got of  %s, expected: int[].",
+                    String.format("Type mismatch (class: %s, method: %s). Got: %s, expected: int[].",
                             this.currentClass != null ? this.currentClass.getName() : "",
                             this.currentMethod != null ? this.currentMethod.getName() : "",
                             array_type
@@ -565,7 +595,7 @@ public class ValidateTypeVisitor implements Visitor{
         if (!(array_type.equals(VarType.INT_ARRAY.getType()))){
             // object is not an array - SEMANTIC ERROR #13
             throw new SemanticException(
-                    String.format("Type mismatch (class: %s, method: %s). Got of  %s, expected: int[].",
+                    String.format("Type mismatch, cannot run method .length on non arrays (class: %s, method: %s). Got: %s, expected: int[].",
                             this.currentClass != null ? this.currentClass.getName() : "",
                             this.currentMethod != null ? this.currentMethod.getName() : "",
                             array_type
@@ -691,8 +721,8 @@ public class ValidateTypeVisitor implements Visitor{
             }
 
             if (actualType instanceof RefType){
-                // Validate that the actual class of the refType of both params are equal
-                if (!((RefType) actualType).id().equals(((RefType) paramType).id())){
+                // Validate that the actual class of the refType of both params are equal or sybtype
+                if (!symbolTable.isSubtype(actualType, paramType)) {
                     // Invalid call to method - SEMANTIC ERROR #11
                     throw new SemanticException(
                             String.format("Invalid call to method %s (class %s, method %s): parameter type mismatch at argument %d. Got %s, expected %s.",
@@ -713,7 +743,17 @@ public class ValidateTypeVisitor implements Visitor{
         if (returnType instanceof IntAstType) return VarType.INT.getType();
         else if (returnType instanceof IntArrayAstType) return VarType.INT_ARRAY.getType();
         else if (returnType instanceof BoolAstType) return VarType.BOOL.getType();
-        else if (returnType instanceof RefType) return ((RefType) returnType).id();
+        else if (returnType instanceof RefType) {
+            var id = ((RefType) returnType).id();
+
+            if (id == null) {
+                // Doesn't suppose to happen
+                var err = "Type for return is null and is illegal in MiniJava!";
+                throw new SemanticException(err, SemanticError.UNKNOWN_ERROR);
+            }
+
+            else return id;
+        }
 
         // Variable doesn't conform to any of the types MiniJava handles, probably should never happen
         var err = "Type for return " + returnType + " could not be inferred or is illegal in MiniJava!";
@@ -788,7 +828,7 @@ public class ValidateTypeVisitor implements Visitor{
         if (!lengthType.equals(VarType.INT.getType())) {
             // length is not an int - SEMANTIC ERROR #25
             throw new SemanticException(
-                    String.format("Type mismatch in array initialization (class: %s, method: %s). Got of  %s, expected: int.",
+                    String.format("Type mismatch in array initialization (class: %s, method: %s). Got: %s, expected: int.",
                             this.currentClass != null ? this.currentClass.getName() : "",
                             this.currentMethod != null ? this.currentMethod.getName() : "",
                             lengthType
@@ -825,7 +865,7 @@ public class ValidateTypeVisitor implements Visitor{
         if (!exprType.equals(VarType.BOOL.getType())){
             // expression is not a boolean - SEMANTIC ERROR #21
             throw new SemanticException(
-                    String.format("Type mismatch in ! operation (class: %s, method: %s). Got of  %s, expected: int.",
+                    String.format("Type mismatch in ! operation (class: %s, method: %s). Got: %s, expected: int.",
                             this.currentClass != null ? this.currentClass.getName() : "",
                             this.currentMethod != null ? this.currentMethod.getName() : "",
                             exprType
@@ -853,6 +893,6 @@ public class ValidateTypeVisitor implements Visitor{
 
     @Override
     public String visit(RefType t) {
-        return VarType.REF.getType();
+        return t.id();
     }
 }

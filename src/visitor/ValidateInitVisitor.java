@@ -37,11 +37,13 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(MainClass mainClass) {
+        this.currentInitMap = new InitMap();
         this.currentClass = this.symbolTable.getClass(mainClass.name());
         this.currentMethod = this.symbolTable.getMethod("main", null);
         mainClass.mainStatement().accept(this);
         this.currentMethod = null;
         this.currentClass = null;
+        this.currentInitMap = null;
         return null;
     }
 
@@ -142,7 +144,7 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(AssignStatement assignStatement) {
-        if(currentMethod.getVar(assignStatement.lv()).isLocalVariable()) { //lv is a local variable
+        if(this.symbolTable.getVar(currentMethod, assignStatement.lv()).isLocalVariable()) { //lv is a local variable
             currentInitMap.init(assignStatement.lv());
         }
         assignStatement.rv().accept(this);
@@ -151,7 +153,7 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(AssignArrayStatement assignArrayStatement) {
-        if(currentMethod.getVar(assignArrayStatement.lv()).isLocalVariable()) { //lv is a local variable
+        if(this.symbolTable.getVar(currentMethod, assignArrayStatement.lv()).isLocalVariable()) { //lv is a local variable
             currentInitMap.init(assignArrayStatement.lv());
         }
         assignArrayStatement.index().accept(this);
@@ -228,7 +230,7 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(IdentifierExpr e) {
-        var variable = currentMethod.getVar(e.id());
+        var variable = this.symbolTable.getVar(currentMethod, e.id());
         if(variable != null && variable.isLocalVariable()) { //e is a local variable
             if (!currentInitMap.isInit(e.id())) {
                 // if e is not init here the validation fails
