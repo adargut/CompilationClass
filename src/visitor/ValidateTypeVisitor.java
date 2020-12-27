@@ -9,8 +9,6 @@ import symboltable.SymbolTable;
 import symboltable.Variable;
 import utils.VarType;
 
-import java.sql.Ref;
-import java.util.stream.IntStream;
 
 public class ValidateTypeVisitor implements Visitor{
     private Class currentClass;
