@@ -115,24 +115,21 @@ public class ValidateInitVisitor implements Visitor {
     @Override
     public String visit(IfStatement ifStatement) {
         ifStatement.cond().accept(this);
-        InitMap thenMap = new InitMap(currentInitMap); //copy
-        InitMap elseMap = new InitMap(currentInitMap); //copy
-        currentInitMap = thenMap;
-        ifStatement.thencase().accept(this);
-        currentInitMap = elseMap;
-        ifStatement.elsecase().accept(this);
-        currentInitMap = InitMap.merge(thenMap, elseMap);
+        InitMap beforeMap = new InitMap(currentInitMap); //copy
+        ifStatement.thencase().accept(this); // construct map of then clause
+        InitMap thenMap = new InitMap(currentInitMap);
+        currentInitMap = beforeMap; // reset map to state before if
+        ifStatement.elsecase().accept(this); // construct map of else clause
+        currentInitMap = InitMap.merge(thenMap, currentInitMap);
         return null;
     }
 
     @Override
     public String visit(WhileStatement whileStatement) {
         whileStatement.cond().accept(this);
-        InitMap enterMap = new InitMap(currentInitMap); //copy
         InitMap noEnterMap = new InitMap(currentInitMap); //copy
-        currentInitMap = enterMap;
-        whileStatement.body().accept(this);
-        currentInitMap = InitMap.merge(enterMap, noEnterMap);
+        whileStatement.body().accept(this); // construct map of inside while
+        currentInitMap = InitMap.merge(noEnterMap, currentInitMap);
         return null;
     }
 
@@ -144,20 +141,36 @@ public class ValidateInitVisitor implements Visitor {
 
     @Override
     public String visit(AssignStatement assignStatement) {
+        assignStatement.rv().accept(this);
         if(this.symbolTable.getVar(currentMethod, assignStatement.lv()).isLocalVariable()) { //lv is a local variable
             currentInitMap.init(assignStatement.lv());
         }
-        assignStatement.rv().accept(this);
         return null;
     }
 
     @Override
     public String visit(AssignArrayStatement assignArrayStatement) {
+        var variable = this.symbolTable.getVar(currentMethod, assignArrayStatement.lv());
+        if(variable != null && variable.isLocalVariable()) { // lv is a local variable
+            if (!currentInitMap.isInit(assignArrayStatement.lv())) {
+                // if lv is not init here the validation fails
+                // Obj is not definitely initialized - SEMANTIC ERROR #15
+                throw new SemanticException(
+                        SemanticError.OBJ_NOT_INITIALIZED,
+                        new String[] {
+                                assignArrayStatement.lv(),
+                                this.currentClass != null ? this.currentClass.getName() : "",
+                                this.currentMethod != null ? this.currentMethod.getName() : ""
+                        }
+                );
+            }
+        }
+
+        assignArrayStatement.index().accept(this);
+        assignArrayStatement.rv().accept(this);
         if(this.symbolTable.getVar(currentMethod, assignArrayStatement.lv()).isLocalVariable()) { //lv is a local variable
             currentInitMap.init(assignArrayStatement.lv());
         }
-        assignArrayStatement.index().accept(this);
-        assignArrayStatement.rv().accept(this);
         return null;
     }
 

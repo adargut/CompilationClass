@@ -1,0 +1,48 @@
+class Main {
+	public static void main(String[] args) {
+		System.out.println(1);
+	}
+}
+
+class Shared {
+	int theThing;
+
+	int theThing() {
+		return theThing;
+	}
+
+}
+
+class A extends Shared {
+}
+
+class B extends A {
+	int theThing() {
+		return theThing;
+	}
+
+}
+
+class C extends A {
+	int theThing() {
+		return theThing;
+	}
+
+}
+
+class D extends A {
+	int theThing() {
+		int theThing;
+		theThing = 88;
+		return theThing;
+	}
+
+}
+
+class E {
+	int theThing(int theThing) {
+		return theThing;
+	}
+
+}
+

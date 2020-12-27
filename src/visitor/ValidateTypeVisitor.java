@@ -9,6 +9,7 @@ import symboltable.SymbolTable;
 import symboltable.Variable;
 import utils.VarType;
 
+import java.sql.Ref;
 import java.util.stream.IntStream;
 
 public class ValidateTypeVisitor implements Visitor{
@@ -125,7 +126,7 @@ public class ValidateTypeVisitor implements Visitor{
     @Override
     public String visit(MainClass mainClass) {
         this.currentClass = this.symbolTable.getClass(mainClass.name());
-        this.currentMethod = this.symbolTable.getMethod("main", null);
+        this.currentMethod = this.currentClass.getMethod("main", true);
         mainClass.mainStatement().accept(this);
         this.currentMethod = null;
         this.currentClass = null;
@@ -151,7 +152,7 @@ public class ValidateTypeVisitor implements Visitor{
 
     @Override
     public String visit(MethodDecl methodDecl) {
-        this.currentMethod = symbolTable.getMethod(methodDecl.name(), methodDecl.lineNumber);
+        this.currentMethod = this.currentClass.getMethod(methodDecl.name(), true);
         Method overriddenMethod = symbolTable.getOverridenMethod(currentMethod);
 
         if (overriddenMethod != null) {
@@ -175,6 +176,16 @@ public class ValidateTypeVisitor implements Visitor{
         AstType actualReturnType = getVarType(methodDecl.ret().accept(this));
         AstType expectedReturnType = currentMethod.getMethodDecl().returnType();
 
+        if (expectedReturnType instanceof RefType && symbolTable.getClass(((RefType) expectedReturnType).id()) == null) {
+            // Return type class doesn't exist
+            throw new SemanticException(
+                    String.format("Invalid return type (class: %s, method: %s). Class %s doesn't exist.",
+                            this.currentClass != null ? this.currentClass.getName() : "",
+                            this.currentMethod != null ? this.currentMethod.getName() : "",
+                            ((RefType) expectedReturnType).id()),
+                    SemanticError.OBJ_DOESNT_EXIST
+            );
+        }
         if (!symbolTable.isSubtype(actualReturnType, expectedReturnType)) {
             // Return type is not matching declared type - SEMANTIC ERROR #18
             throw new SemanticException(
