@@ -1,4 +1,9 @@
 /*************/
+/* Based on a template by Oren Ish-Shalom */
+/*************/
+
+
+/*************/
 /* IMPORTS */
 /*************/
 
@@ -16,15 +21,11 @@ parser code
 		super(lexer);
 		this.lexer = lexer;
 	}
+
+	// Override default error reporting in parser
 	public void report_error(String message, Object info)
 	{
-    System.out.print("Syntax error at line " + lexer.getLine() + " of input\n");
-		// System.out.print("ERROR >> ");
-		// System.out.print("[");
-		// System.out.print(lexer.getLine());
-		// System.out.print(":");
-		// System.out.print(lexer.getCharPos());
-		// System.out.print("] ");
+	    System.err.print("Syntax error at line " + lexer.getLine() + " of input. Parser\n");
 		System.exit(1);
 	}
 :}
@@ -35,6 +36,7 @@ parser code
 scan with
 {:
 	Symbol s;
+    try {
 	s = lexer.next_token();
 	// System.out.print(s.sym);
 	// System.out.print("[");
@@ -51,29 +53,158 @@ scan with
 	// }
 	// System.out.print("\n");
 	return s;
+     } catch (java.lang.Error e) {
+         System.err.print("Syntax error at line " + lexer.getLine() + " of input. Lexer\n");
+         System.exit(1);
+         return null;
+     }
 :};
 
 /*************/
 /* TERMINALS */
 /*************/
-terminal PUBLIC;
+terminal PUBLIC, STATIC, VOID, MAIN, STRING;
+terminal PRINT;
+terminal RETURN;
+terminal TRUE, FALSE;
+terminal THIS, NEW;
+terminal DOT, LENGTH, COMMA, SEMICOLON;
+terminal PLUS, MINUS, MULT, LT, AND, NOT;
+terminal LBRACKET, RBRACKET, LPAREN, RPAREN, LCURL, RCURL;
+terminal ASSIGN;
+terminal BOOLEAN_TYPE, INT_TYPE, NULL;
+terminal CLASS, EXTENDS;
+terminal IF, WHILE, ELSE;
+
+terminal String IDENTIFIER;
+terminal Integer INTEGER;
 
 /*****************/
 /* NON TERMINALS */
 /*****************/
-non terminal prog;
+
+nonterminal Program Program;
+nonterminal MainClass MainClass;
+nonterminal MethodDecl MethodDecl;
+nonterminal List<MethodDecl> MethodDeclList;
+nonterminal Statement Statement;
+nonterminal BlockStatement BlockStatement;
+nonterminal List<Statement> StatementsList;
+nonterminal Expr Expr;
+nonterminal List<Expr> ExprList;
+nonterminal List<Expr> ActualsList;
+nonterminal List<Expr> MethodCallParamsList;
+nonterminal ArrayAccessExpr ArrayAccessExpr;
+nonterminal ArrayLengthExpr ArrayLength;
+nonterminal IdentifierExpr IdentifierExpr;
+nonterminal AstType Type;
+nonterminal VarDecl VarDecl;
+nonterminal List<VarDecl> VarDeclsList;
+nonterminal FormalArg FormalArg;
+nonterminal List<FormalArg> FormalArgList;
+nonterminal List<FormalArg> FormalArgListWithParenthesis;
+nonterminal ClassDecl ClassDecl;
+nonterminal List<ClassDecl> ClassDeclsList;
 
 /***********************/
 /* OPERATOR PRECEDENCE */
 /***********************/
 
+precedence nonassoc ASSIGN;
+precedence nonassoc AND;
+precedence left LT;
+precedence left PLUS, MINUS;
+precedence left MULT;
+precedence right NOT, NEW;
+precedence left DOT;
+
 /************************/
 /* INITIAL NON TERMINAL */
 /************************/
-start with prog;
+start with Program;
 
 /********************/
 /* PRODUCTION RULES */
 /********************/
 
-prog            ::=     ;
+Program            ::= MainClass:mainClass ClassDeclsList:classdecls             {: RESULT = new Program(mainClass, classdecls); :};
+
+MainClass          ::= CLASS IDENTIFIER:name LCURL PUBLIC STATIC VOID MAIN LPAREN STRING LBRACKET RBRACKET IDENTIFIER:args RPAREN LCURL Statement:mainStatement RCURL RCURL
+                                                                                 {: RESULT = new MainClass(name, args, mainStatement); :};
+
+ClassDeclsList     ::= ClassDeclsList:classdecls ClassDecl:classDecl             {: classdecls.add(classDecl); RESULT = classdecls; :}
+                |      /* empty ClassDeclsList */                                {: RESULT = new LinkedList<ClassDecl>(); :};
+
+ClassDecl          ::= CLASS IDENTIFIER:name LCURL VarDeclsList:fields MethodDeclList:methoddecls RCURL
+                                                                                 {: RESULT = new ClassDecl(name, null, fields, methoddecls); :}
+                |      CLASS IDENTIFIER:name EXTENDS IDENTIFIER:superName LCURL VarDeclsList:fields MethodDeclList:methoddecls RCURL
+                                                                                 {: RESULT = new ClassDecl(name, superName, fields, methoddecls); :};
+
+MethodDeclList      ::= MethodDecl:methodDecl MethodDeclList:methodDeclList       {: RESULT = methodDeclList; methodDeclList.add(0, methodDecl); :}
+                |       /* empty MethodDeclList */                               {: RESULT = new LinkedList<MethodDecl>(); :};
+
+MethodDecl          ::= PUBLIC:p Type:returnType IDENTIFIER:name FormalArgListWithParenthesis:formals LCURL VarDeclsList:vardecls StatementsList:body RETURN Expr:ret SEMICOLON RCURL
+                                                                                 {: RESULT = new MethodDecl(returnType, name, formals, vardecls, body, ret, pleft); :}
+                |       Type:returnType IDENTIFIER:name FormalArgListWithParenthesis:formals LCURL VarDeclsList:vardecls StatementsList:body RETURN Expr:ret SEMICOLON RCURL
+                                                                                 {: RESULT = new MethodDecl(returnType, name, formals, vardecls, body, ret, returnTypeleft); :};
+
+Statement           ::= IDENTIFIER:lv ASSIGN Expr:expr SEMICOLON                 {: RESULT = new AssignStatement(lv, expr); :}
+                |       IF LPAREN Expr:cond RPAREN Statement:thencase ELSE Statement:elsecase
+                                                                                 {: RESULT = new IfStatement(cond, thencase, elsecase); :}
+                |       PRINT LPAREN Expr:arg RPAREN SEMICOLON                   {: RESULT = new SysoutStatement(arg); :}
+                |       IDENTIFIER:lv LBRACKET Expr:index RBRACKET ASSIGN Expr:rv SEMICOLON
+                                                                                 {: RESULT = new AssignArrayStatement(lv, index, rv); :}
+                |       WHILE LPAREN Expr:cond RPAREN Statement:body
+                                                                                 {: RESULT = new WhileStatement(cond, body); :}
+                |       LCURL StatementsList:statements RCURL                    {: RESULT = new BlockStatement(statements); :};
+
+StatementsList      ::= Statement:statement StatementsList:statementsList        {: RESULT = statementsList; statementsList.add(0, statement); :}
+                |     /* empty StatementsList */                                 {: RESULT = new LinkedList<Statement>(); :};
+
+IdentifierExpr      ::= IDENTIFIER:id                                            {: RESULT = new IdentifierExpr(id); :};
+
+Expr                ::= Expr:e1 PLUS Expr:e2                                     {: RESULT = new AddExpr(e1, e2); :}
+                |       Expr:e1 MINUS Expr:e2                                    {: RESULT = new SubtractExpr(e1, e2); :}
+                |       Expr:e1 MULT Expr:e2                                     {: RESULT = new MultExpr(e1, e2); :}
+                |       Expr:e1 LT Expr:e2                                       {: RESULT = new LtExpr(e1, e2); :}
+                |       Expr:e1 AND Expr:e2                                      {: RESULT = new AndExpr(e1, e2); :}
+                |       Expr:arrayExpr LBRACKET Expr:indexExpr RBRACKET          {: RESULT = new ArrayAccessExpr(arrayExpr, indexExpr); :}
+                |       Expr:arrayExpr DOT LENGTH                                {: RESULT = new ArrayLengthExpr(arrayExpr); :}
+                |       Expr:ownerExpr DOT IDENTIFIER:methodId MethodCallParamsList:actuals
+                                                                                 {: RESULT = new MethodCallExpr(ownerExpr, methodId, actuals); :}
+                |       INTEGER:num                                              {: RESULT = new IntegerLiteralExpr(num.intValue()); :}
+                |       TRUE                                                     {: RESULT = new TrueExpr(); :}
+                |       FALSE                                                    {: RESULT = new FalseExpr(); :}
+                |       IDENTIFIER:id                                            {: RESULT = new IdentifierExpr(id); :}
+                |       THIS                                                     {: RESULT = new ThisExpr(); :}
+                |       NEW INT_TYPE LBRACKET Expr:lengthExpr RBRACKET            {: RESULT = new NewIntArrayExpr(lengthExpr); :}
+                |       NEW IDENTIFIER:classId LPAREN RPAREN                     {: RESULT = new NewObjectExpr(classId); :}
+                |       NOT:not Expr:e                                           {: RESULT = new NotExpr(e); :}
+                |       LPAREN Expr:expr RPAREN                                  {: RESULT = expr; :};
+
+
+Type                ::= INT_TYPE                                                 {: RESULT = new IntAstType(); :}
+                |       BOOLEAN_TYPE                                             {: RESULT = new BoolAstType(); :}
+                |       IDENTIFIER:classId                                       {: RESULT = new RefType(classId); :}
+                |       INT_TYPE LBRACKET RBRACKET                                {: RESULT = new IntArrayAstType(); :};
+
+VarDecl             ::= Type:type IDENTIFIER:name SEMICOLON                      {: RESULT = new VarDecl(type, name, typeleft); :};
+
+VarDeclsList        ::= VarDeclsList:varDeclsList VarDecl:varDecl                {: RESULT = varDeclsList; varDeclsList.add(varDecl); :}
+                |       /* empty VarDeclsList */                                 {: RESULT = new LinkedList<VarDecl>(); :};
+
+ExprList            ::= Expr:e                                                   {: RESULT = new LinkedList<Expr>(); RESULT.add(e); :}
+                |       Expr:e COMMA ExprList:exprList                           {: RESULT = exprList; exprList.add(e); :};
+
+MethodCallParamsList    ::= LPAREN RPAREN                                        {: RESULT = new LinkedList<Expr>(); :}
+                |       LPAREN ExprList:exprList RPAREN                          {: RESULT = exprList; :};
+
+
+FormalArg           ::= Type:type IDENTIFIER:name                                {: RESULT = new FormalArg(type, name, typeleft); :};
+
+FormalArgList       ::= FormalArg:formalArg                                      {: RESULT = new LinkedList<FormalArg>(); RESULT.add(formalArg); :}
+                |       FormalArgList:formalArgList COMMA FormalArg:formalArg    {: RESULT = formalArgList; formalArgList.add(formalArg); :};
+
+
+FormalArgListWithParenthesis ::= LPAREN RPAREN                                   {: RESULT = new LinkedList<FormalArg>(); :}
+                |       LPAREN FormalArgList:formalArgList RPAREN                {: RESULT = formalArgList; :};

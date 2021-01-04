@@ -83,7 +83,7 @@ public class AstPrintVisitor implements Visitor {
 
     @Override
     public String visit(MethodDecl methodDecl) {
-        appendWithIndent("");
+        appendWithIndent("public ");
         methodDecl.returnType().accept(this);
         builder.append(" ");
         builder.append(methodDecl.name());
@@ -168,12 +168,12 @@ public class AstPrintVisitor implements Visitor {
     public String visit(WhileStatement whileStatement) {
         appendWithIndent("while (");
         whileStatement.cond().accept(this);
-        builder.append(") {");
+        builder.append(")");
         indent++;
         whileStatement.body().accept(this);
         indent--;
         builder.append("\n");
-        appendWithIndent("}\n");
+        appendWithIndent("\n");
         return null;
     }
 

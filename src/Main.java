@@ -1,5 +1,4 @@
 import ast.*;
-import codegen.vtable.VTable;
 import codegen.vtable.VTables;
 import semanticanalysis.SemanticException;
 import symboltable.SymbolTable;
@@ -18,7 +17,9 @@ public class Main {
             Program prog;
 
             if (inputMethod.equals("parse")) {
-                throw new UnsupportedOperationException("TODO - Ex. 4");
+                Parser p = new Parser(new Lexer(new FileReader(filename)));
+                prog = (Program)(p.parse().value);
+
             } else if (inputMethod.equals("unmarshal")) {
                 AstXMLSerializer xmlSerializer = new AstXMLSerializer();
                 prog = xmlSerializer.deserialize(new File(filename));
