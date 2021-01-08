@@ -40,6 +40,9 @@ import java_cup.runtime.*;
 /****************/
 /* DECLARATIONS */
 /****************/
+%state SINGLE_COMMENT
+%state MULTI_COMMENT
+
 /*****************************************************************************/
 /* Code between %{ and %}, both of which must be at the beginning of a line, */
 /* will be copied verbatim (letter to letter) into the Lexer class code.     */
@@ -58,10 +61,27 @@ import java_cup.runtime.*;
 	/*******************************************/
 	public int getLine()    { return yyline + 1; }
 	public int getCharPos() { return yycolumn;   }
+	public void yyerror()   { throw new java.lang.Error(); }
 %}
 
 /***********************/
 /* MACRO DECALARATIONS */
+DIGIT           = [0-9]
+NONZERO_DIGITS  = [1-9]
+NEWLINE         = "\n"
+LETTER          = [a-zA-Z]
+WHITESPACE      = " "
+TAB             = "\t"
+CARRIAGE        = "\r"
+SINGLE_COMMENT  = "//"
+MULTI_COMMENT_L = "/*"
+MULTI_COMMENT_R = "*/"
+UNDERSCORE      = "_"
+IDENTIFIER      = {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
+INTEGER         = {NONZERO_DIGIT}({DIGIT})*
+IGNORED         = {WHITESPACE}|{CARRIAGE}|{TAB}
+ANY_STRING      = [.+]
+
 /***********************/
 
 /******************************/
@@ -82,5 +102,57 @@ import java_cup.runtime.*;
 
 <YYINITIAL> {
 "public"            { return symbol(sym.PUBLIC); }
+"static"            { return symbol(sym.STATIC); }
+"void"              { return symbol(sym.VOID); }
+"main"              { return symbol(sym.MAIN); }
+"string"            { return symbol(sym.STRING); }
+"System.out.println" { return symbol(sym.PRINT); }
+"return"            { return symbol(sym.RETURN); }
+"true"              { return symbol(sym.TRUE); }
+"false"             { return symbol(sym.FALSE); }
+"this"              { return symbol(sym.THIS); }
+"new"               { return symbol(sym.NEW); }
+"length"            { return symbol(sym.LENGTH); }
+"."                 { return symbol(sym.DOT); }
+","                 { return symbol(sym.COMMA); }
+";"                 { return symbol(sym.SEMICOLON); }
+"+"                 { return symbol(sym.PLUS); }
+"-"                 { return symbol(sym.MINUS); }
+"*"                 { return symbol(sym.MULT); }
+"<"                 { return symbol(sym.LT); }
+"&&"                { return symbol(sym.AND); }
+"!"                 { return symbol(sym.NOT); }
+"["                 { return symbol(sym.LBRACKET); }
+"]"                 { return symbol(sym.RBRACKET); }
+"("                 { return symbol(sym.LPAREN); }
+")"                 { return symbol(sym.RPAREN); }
+"{"                 { return symbol(sym.LCURL); }
+"}"                 { return symbol(sym.RCURL); }
+"="                 { return symbol(sym.ASSIGN); }
+"boolean"           { return symbol(sym.BOOLEAN_TYPE); }
+"int"               { return symbol(sym.INT_TYPE); }
+"null"              { return symbol(sym.NULL); }
+"class"             { return symbol(sym.CLASS); }
+"extends"           { return symbol(sym.EXTENDS); }
+"if"                { return symbol(sym.IF); }
+"while"             { return symbol(sym.WHILE); }
+"else"              { return symbol(sym.ELSE); }
+"{IDENTIFIER}"      { return symbol(sym.IDENTIFIER); }
+"{INTEGER}"         { return symbol(sym.INTEGER, new Integer(yytext())); }
+"{IGNORED}"         { /* do nothing */ }
+"{NEWLINE}"         { yyline++; }
+"{SINGLE_COMMENT}"  { yybegin(SINGLE_COMMENT); }
+"{MULTI_COMMENT_L}" { yybegin(MULTI_COMMENT); }
 <<EOF>>				{ return symbol(sym.EOF); }
+"{ANY_STRING}"      { yyerror(); /* If we reached here, the token does not match any known pattern */ }
+}
+
+<SINGLE_COMMENT> {
+"[\n]"  { yybegin(YYINITIAL); }
+"[^\n]" { /* do nothing */ }
+}
+
+<MULTI_COMMENT> {
+"{MULTI_COMMENT_R}"    { yybegin(YYINITIAL); }
+"[^{MULTI_COMMENT_R}]" { /* do nothing */ }
 }
