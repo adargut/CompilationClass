@@ -175,7 +175,10 @@ public class BuildClassHierarchyVisitor implements Visitor {
     public String visit(IfStatement ifStatement) {
         ifStatement.cond().accept(this);
         ifStatement.thencase().accept(this);
-        ifStatement.elsecase().accept(this);
+        if (ifStatement.elsecase() != null)
+            // TODO: Validate that it can happen! BNF supports "{" ( Statement )* "}" rule which means an else clause
+            // TODO: can be empty (* can be 0 or more), bt verify just in case the xml form
+            ifStatement.elsecase().accept(this);
         return null;
     }
 
