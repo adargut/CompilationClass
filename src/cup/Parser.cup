@@ -58,6 +58,7 @@ scan with
          System.exit(1);
          return null;
      }
+     //todo catch multiline error exception
 :};
 
 /*************/
