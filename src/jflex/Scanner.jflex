@@ -66,7 +66,6 @@ int comment_start_line;
 	public int getLine()    { return yyline + 1; }
 	public int getCharPos() { return yycolumn;   }
 	public void yyerror()   { throw new java.lang.Error(); }
-	public void mlCommentError() { /* todo: throw some other error */ }
 %}
 
 /***********************/
@@ -158,7 +157,7 @@ ANY_STRING      = .+
 }
 
 <MULTI_COMMENT> {
-<<EOF>>				 { mlCommentError(); /* Multi-line comment was not closed */ }
+<<EOF>>				 { yyline = comment_start_line; yyerror(); /* Multi-line comment was not closed */ }
 {NEWLINE}            { yyline++; }
 {MULTI_COMMENT_R}    { yybegin(YYINITIAL); }
 ^{MULTI_COMMENT_R}   { /* do nothing */ }
