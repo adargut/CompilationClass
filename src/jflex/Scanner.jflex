@@ -148,11 +148,12 @@ ANY_STRING      = [.+]
 }
 
 <SINGLE_COMMENT> {
-"[\n]"  { yybegin(YYINITIAL); }
-"[^\n]" { /* do nothing */ }
+"{NEWLINE}"  { yyline++; yybegin(YYINITIAL); }
+"^{NEWLINE}" { /* do nothing */ }
 }
 
 <MULTI_COMMENT> {
-"{MULTI_COMMENT_R}"    { yybegin(YYINITIAL); }
-"[^{MULTI_COMMENT_R}]" { /* do nothing */ }
+"{MULTI_COMMENT_R}"  { yyline++; yybegin(YYINITIAL); }
+"^{MULTI_COMMENT_R}" { /* do nothing */ }
+<<EOF>>				{ yyerror(); /* Multi-line comment was not closed */ }
 }
