@@ -31,6 +31,9 @@ import java_cup.runtime.*;
 /********************************************************************/
 %line
 %column
+%{
+long comment_start_line;
+%}
 
 /******************************************************************/
 /* CUP compatibility mode interfaces with a CUP generated parser. */
@@ -78,9 +81,9 @@ MULTI_COMMENT_L = "/*"
 MULTI_COMMENT_R = "*/"
 UNDERSCORE      = "_"
 IDENTIFIER      = {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
-INTEGER         = {NONZERO_DIGIT}({DIGIT})*
+INTEGER         = {NONZERO_DIGITS}({DIGIT})*
 IGNORED         = {WHITESPACE}|{CARRIAGE}|{TAB}
-ANY_STRING      = [.+]
+ANY_STRING      = .+
 
 /***********************/
 
@@ -137,23 +140,24 @@ ANY_STRING      = [.+]
 "if"                { return symbol(sym.IF); }
 "while"             { return symbol(sym.WHILE); }
 "else"              { return symbol(sym.ELSE); }
-"{IDENTIFIER}"      { return symbol(sym.IDENTIFIER); }
-"{INTEGER}"         { return symbol(sym.INTEGER, new Integer(yytext())); }
-"{IGNORED}"         { /* do nothing */ }
-"{NEWLINE}"         { yyline++; }
-"{SINGLE_COMMENT}"  { yybegin(SINGLE_COMMENT); }
-"{MULTI_COMMENT_L}" { yybegin(MULTI_COMMENT); }
+{IDENTIFIER}        { return symbol(sym.IDENTIFIER); }
+{INTEGER}           { return symbol(sym.INTEGER, new Integer(yytext())); }
+{IGNORED}           { /* do nothing */ }
+{NEWLINE}           { /* do nothing */ }
+{SINGLE_COMMENT}    { yybegin(SINGLE_COMMENT); }
+{MULTI_COMMENT_L}   { comment_start_line = yyline; yybegin(MULTI_COMMENT); }
 <<EOF>>				{ return symbol(sym.EOF); }
-"{ANY_STRING}"      { yyerror(); /* If we reached here, the token does not match any known pattern */ }
+{ANY_STRING}        { yyerror(); /* If we reached here, the token does not match any known pattern */ }
 }
 
 <SINGLE_COMMENT> {
-"{NEWLINE}"  { yyline++; yybegin(YYINITIAL); }
-"^{NEWLINE}" { /* do nothing */ }
+{NEWLINE}           { yybegin(YYINITIAL); }
+^{NEWLINE}         { /* do nothing */ }
 }
 
 <MULTI_COMMENT> {
-"{MULTI_COMMENT_R}"  { yyline++; yybegin(YYINITIAL); }
-"^{MULTI_COMMENT_R}" { /* do nothing */ }
-<<EOF>>				{ yyerror(); /* Multi-line comment was not closed */ }
+<<EOF>>				 { yyerror(); /* Multi-line comment was not closed */ }
+{NEWLINE}            { yyline++; }
+{MULTI_COMMENT_R}    { yybegin(YYINITIAL); }
+^{MULTI_COMMENT_R}   { /* do nothing */ }
 }

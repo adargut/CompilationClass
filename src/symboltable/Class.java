@@ -1,12 +1,8 @@
 package symboltable;
 
 import ast.ClassDecl;
-<<<<<<< HEAD
-import utils.Tree;
-=======
 import semanticanalysis.SemanticError;
 import semanticanalysis.SemanticException;
->>>>>>> a2a8c1c065c26a2e0b49a865bd4b51819544b16a
 import utils.TreeNode;
 
 import java.util.*;
