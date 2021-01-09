@@ -158,7 +158,6 @@ ANY_STRING      = .+
 
 <MULTI_COMMENT> {
 <<EOF>>				 { yyline = comment_start_line; yyerror(); /* Multi-line comment was not closed */ }
-{NEWLINE}            { yyline++; }
 {MULTI_COMMENT_R}    { yybegin(YYINITIAL); }
 ^{MULTI_COMMENT_R}   { /* do nothing */ }
 }
