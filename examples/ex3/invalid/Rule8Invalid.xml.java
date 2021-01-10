@@ -5,7 +5,7 @@ class Main {
 }
 
 class Classes {
-	int run() {
+	public int run() {
 		Base b;
 		return 0;
 	}

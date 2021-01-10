@@ -10,7 +10,7 @@ class A {
 class B extends A {
 	int theVar;
 
-	int foo() {
+	public int foo() {
 		return theVar;
 	}
 
@@ -19,14 +19,14 @@ class B extends A {
 class C extends A {
 	int theVar;
 
-	int foo() {
+	public int foo() {
 		return theVar;
 	}
 
 }
 
 class D extends C {
-	int bar(int renamedVar, int anotherVar) {
+	public int bar(int renamedVar, int anotherVar) {
 		int[] max;
 		max = new int[(renamedVar) * (anotherVar)];
 		return (renamedVar)[0];

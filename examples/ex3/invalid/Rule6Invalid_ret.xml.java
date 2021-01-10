@@ -5,14 +5,14 @@ class Main {
 }
 
 class Parent {
-	int run() {
+	public int run() {
 		return 0;
 	}
 
 }
 
 class Child extends Parent {
-	boolean run() {
+	public boolean run() {
 		return false;
 	}
 

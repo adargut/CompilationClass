@@ -10,7 +10,7 @@ class A {
 }
 
 class B {
-	int run() {
+	public int run() {
 		return x;
 	}
 

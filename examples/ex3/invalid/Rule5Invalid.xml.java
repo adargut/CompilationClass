@@ -5,11 +5,11 @@ class Main {
 }
 
 class Base {
-	boolean Init() {
+	public boolean Init() {
 		return true;
 	}
 
-	boolean Init() {
+	public boolean Init() {
 		return true;
 	}
 

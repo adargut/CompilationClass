@@ -5,14 +5,14 @@ class Main {
 }
 
 class Parent {
-	int run(Parent x, int y) {
+	public int run(Parent x, int y) {
 		return 0;
 	}
 
 }
 
 class Child extends Parent {
-	int run(Child x, int y) {
+	public int run(Child x, int y) {
 		return 0;
 	}
 

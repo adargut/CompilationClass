@@ -5,14 +5,14 @@ class Main {
 }
 
 class A {
-	int test() {
+	public int test() {
 		return 1;
 	}
 
 }
 
 class C {
-	int test() {
+	public int test() {
 		return 1;
 	}
 
@@ -21,7 +21,7 @@ class C {
 class B extends A {
 	B theVar;
 
-	A foo() {
+	public A foo() {
 		C c;
 		c = new C();
 		return c;

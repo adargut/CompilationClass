@@ -5,7 +5,7 @@ class Main {
 }
 
 class Parent {
-	int run() {
+	public int run() {
 		return new Parent();
 	}
 

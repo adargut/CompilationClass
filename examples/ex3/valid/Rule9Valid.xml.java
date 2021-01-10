@@ -7,13 +7,16 @@ class Main {
 class Base {
 	Child c;
 
-	int run() {
+	public int run() {
 		c = new Child();
 		return 0;
 	}
 
 }
+
 class Parent {
 }
+
 class Child extends Parent {
 }
+

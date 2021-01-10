@@ -5,7 +5,7 @@ class Main {
 }
 
 class A {
-	int run() {
+	public int run() {
 		theVar = 1;
 		return 1;
 	}

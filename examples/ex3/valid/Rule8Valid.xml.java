@@ -8,7 +8,10 @@ class Base {
 	Child c;
 
 }
+
 class Parent {
 }
+
 class Child extends Parent {
 }
+

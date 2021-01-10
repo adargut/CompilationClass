@@ -10,7 +10,7 @@ class Base {
 }
 
 class Derived extends Base {
-	int set(int x) {
+	public int set(int x) {
 		data = (this).doesntExist();
 		return data;
 	}

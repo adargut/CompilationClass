@@ -5,7 +5,7 @@ class Main {
 }
 
 class Classes {
-	int run() {
+	public int run() {
 		int b;
 		b = (1).run();
 		return 0;

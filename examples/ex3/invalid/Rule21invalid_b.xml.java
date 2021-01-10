@@ -5,7 +5,7 @@ class Main {
 }
 
 class Base {
-	int run(boolean x) {
+	public int run(boolean x) {
 		return (x) - (1);
 	}
 

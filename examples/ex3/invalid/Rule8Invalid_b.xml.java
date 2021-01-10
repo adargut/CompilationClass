@@ -7,7 +7,7 @@ class Main {
 class Classes {
 	Base b;
 
-	int run() {
+	public int run() {
 		return 0;
 	}
 

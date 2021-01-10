@@ -8,14 +8,14 @@ class Base {
 }
 
 class Parent {
-	Parent run(int x, int y) {
+	public Parent run(int x, int y) {
 		return 0;
 	}
 
 }
 
 class Child extends Parent {
-	Base run(int x, int y) {
+	public Base run(int x, int y) {
 		return 0;
 	}
 

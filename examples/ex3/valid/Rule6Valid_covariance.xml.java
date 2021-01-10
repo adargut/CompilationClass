@@ -6,15 +6,18 @@ class Main {
 
 class Base {
 }
+
 class Parent {
-	Child run(int x, int y) {
-		return new Child();
+	public Parent run(int x, int y) {
+		return new Parent();
 	}
 
 }
+
 class Child extends Parent {
-	Child run(int x, int y) {
+	public Child run(int x, int y) {
 		return new Child();
 	}
 
 }
+

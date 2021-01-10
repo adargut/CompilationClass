@@ -9,7 +9,7 @@ class A {
 
 	B b;
 
-	int foo() {
+	public int foo() {
 		b = new B();
 		x = (b).run(y);
 		return 1;
@@ -18,7 +18,7 @@ class A {
 }
 
 class B {
-	int run(int sz) {
+	public int run(int sz) {
 		return 1;
 	}
 

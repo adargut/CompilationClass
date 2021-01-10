@@ -5,7 +5,7 @@ class Main {
 }
 
 class Arr {
-	int iota(boolean size) {
+	public int iota(boolean size) {
 		int[] arr;
 		int i;
 		arr = new int[new Arr()];

@@ -5,7 +5,7 @@ class Main {
 }
 
 class Simple {
-	int bar() {
+	public int bar() {
 		int x;
 		boolean b;
 		x = 10;

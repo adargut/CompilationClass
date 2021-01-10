@@ -5,7 +5,7 @@ class Main {
 }
 
 class Base {
-	boolean run(boolean x) {
+	public boolean run(boolean x) {
 		return (x) && (new Base());
 	}
 

@@ -5,7 +5,7 @@ class Main {
 }
 
 class Base {
-	int run(int[] x, int y) {
+	public int run(int[] x, int y) {
 		return (y) * (x);
 	}
 

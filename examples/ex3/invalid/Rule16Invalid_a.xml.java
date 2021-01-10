@@ -9,7 +9,7 @@ class A {
 
 	B b;
 
-	int foo() {
+	public int foo() {
 		b = 1;
 		return 1;
 	}
@@ -17,7 +17,7 @@ class A {
 }
 
 class B {
-	int run(int sz) {
+	public int run(int sz) {
 		return 1;
 	}
 

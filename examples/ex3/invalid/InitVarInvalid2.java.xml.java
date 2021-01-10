@@ -5,7 +5,7 @@ class Main {
 }
 
 class Simple {
-	int fun() {
+	public int fun() {
 		int x;
 		boolean a;
 		boolean b;
@@ -14,7 +14,7 @@ class Simple {
 			{
 				x = 5;
 
-				while ((x) < (7)) {					{
+				while ((x) < (7))					{
 						a = false;
 
 						if ((x) < (3))
@@ -26,7 +26,7 @@ class Simple {
 
 					}
 
-				}
+				
 
 			}
 		else

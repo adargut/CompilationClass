@@ -5,22 +5,25 @@ class Main {
 }
 
 class A {
-	int test() {
+	public int test() {
 		return 1;
 	}
 
 }
+
 class C {
-	int test() {
+	public int test() {
 		return 1;
 	}
 
 }
+
 class B extends A {
 	B theVar;
 
-	A foo() {
+	public A foo() {
 		return new B();
 	}
 
 }
+

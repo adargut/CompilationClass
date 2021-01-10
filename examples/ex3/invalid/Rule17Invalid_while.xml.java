@@ -5,15 +5,15 @@ class Main {
 }
 
 class Simple {
-	int bar() {
+	public int bar() {
 		boolean b;
 		boolean c;
 		int x;
 		b = false;
 		c = true;
-		while ((new Simple()).bar()) {			x = 0;
+		while ((new Simple()).bar())			x = 0;
 
-		}
+		
 		return 0;
 	}
 

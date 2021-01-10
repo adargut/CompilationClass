@@ -6,13 +6,87 @@
 /** CUP generated interface containing symbol constants. */
 public interface sym {
   /* terminals */
-  public static final int error = 1;
-  public static final int PUBLIC = 2;
+  public static final int LBRACKET = 23;
+  public static final int MULT = 19;
+  public static final int INTEGER = 39;
+  public static final int LPAREN = 25;
+  public static final int MINUS = 18;
+  public static final int STATIC = 3;
+  public static final int RPAREN = 26;
+  public static final int NOT = 22;
+  public static final int LCURL = 27;
+  public static final int SEMICOLON = 16;
+  public static final int AND = 21;
+  public static final int LT = 20;
+  public static final int COMMA = 15;
+  public static final int CLASS = 33;
+  public static final int PLUS = 17;
+  public static final int IF = 35;
+  public static final int ASSIGN = 29;
+  public static final int MAIN = 5;
+  public static final int THIS = 11;
+  public static final int DOT = 13;
   public static final int EOF = 0;
+  public static final int RETURN = 8;
+  public static final int RBRACKET = 24;
+  public static final int TRUE = 9;
+  public static final int NEW = 12;
+  public static final int error = 1;
+  public static final int NULL = 32;
+  public static final int INT_TYPE = 31;
+  public static final int VOID = 4;
+  public static final int RCURL = 28;
+  public static final int ELSE = 37;
+  public static final int WHILE = 36;
+  public static final int PUBLIC = 2;
+  public static final int EXTENDS = 34;
+  public static final int STRING = 6;
+  public static final int FALSE = 10;
+  public static final int PRINT = 7;
+  public static final int LENGTH = 14;
+  public static final int IDENTIFIER = 38;
+  public static final int BOOLEAN_TYPE = 30;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
-  "PUBLIC"
+  "PUBLIC",
+  "STATIC",
+  "VOID",
+  "MAIN",
+  "STRING",
+  "PRINT",
+  "RETURN",
+  "TRUE",
+  "FALSE",
+  "THIS",
+  "NEW",
+  "DOT",
+  "LENGTH",
+  "COMMA",
+  "SEMICOLON",
+  "PLUS",
+  "MINUS",
+  "MULT",
+  "LT",
+  "AND",
+  "NOT",
+  "LBRACKET",
+  "RBRACKET",
+  "LPAREN",
+  "RPAREN",
+  "LCURL",
+  "RCURL",
+  "ASSIGN",
+  "BOOLEAN_TYPE",
+  "INT_TYPE",
+  "NULL",
+  "CLASS",
+  "EXTENDS",
+  "IF",
+  "WHILE",
+  "ELSE",
+  "IDENTIFIER",
+  "INTEGER"
   };
 }
 

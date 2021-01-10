@@ -5,7 +5,7 @@ class Main {
 }
 
 class Simple {
-	int fun() {
+	public int fun() {
 		boolean a;
 		a = 5;
 		return 0;

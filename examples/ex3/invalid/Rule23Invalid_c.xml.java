@@ -5,7 +5,7 @@ class Main {
 }
 
 class Arr {
-	int iota(int size) {
+	public int iota(int size) {
 		int[] arr;
 		int i;
 		i = 0;

@@ -5,7 +5,7 @@ class Main {
 }
 
 class Classes {
-	int run() {
+	public int run() {
 		Base b;
 		Derived d;
 		b = new Base();
@@ -22,19 +22,19 @@ class Classes {
 class Base {
 	int data;
 
-	int set(int x) {
+	public int set(int x) {
 		data = x;
 		return data;
 	}
 
-	int get() {
+	public int get() {
 		return data;
 	}
 
 }
 
 class Derived extends Base {
-	int set(int x) {
+	public int set(int x) {
 		data = (x) * (2);
 		return data;
 	}

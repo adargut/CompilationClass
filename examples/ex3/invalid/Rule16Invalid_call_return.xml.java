@@ -9,7 +9,7 @@ class A {
 
 	boolean b;
 
-	int foo() {
+	public int foo() {
 		x = 1;
 		b = (this).foo();
 		return 1;
@@ -18,7 +18,7 @@ class A {
 }
 
 class B {
-	int run(int sz) {
+	public int run(int sz) {
 		return 1;
 	}
 

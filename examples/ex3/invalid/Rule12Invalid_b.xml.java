@@ -5,7 +5,7 @@ class Main {
 }
 
 class A {
-	int run() {
+	public int run() {
 		return ((new A()).run()).run();
 	}
 

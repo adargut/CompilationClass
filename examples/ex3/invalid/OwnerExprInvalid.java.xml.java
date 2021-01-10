@@ -9,19 +9,19 @@ class Tree {
 
 	Tree right;
 
-	Tree getLeft() {
+	public Tree getLeft() {
 		return left;
 	}
 
-	Tree getRight() {
+	public Tree getRight() {
 		return right;
 	}
 
-	int num() {
+	public int num() {
 		return 2;
 	}
 
-	int fun() {
+	public int fun() {
 		Tree t;
 		return ((new Tree()).getLeft()).fun();
 	}

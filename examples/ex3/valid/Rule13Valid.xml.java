@@ -5,7 +5,7 @@ class Main {
 }
 
 class A {
-	int[] test() {
+	public int[] test() {
 		int[] x;
 		x = new int[2];
 		x[0] = 1;
@@ -13,12 +13,14 @@ class A {
 	}
 
 }
+
 class B extends A {
 	A theVar;
 
-	int foo() {
+	public int foo() {
 		theVar = new A();
-		return theVar.test().length;
+		return ((theVar).test()).length;
 	}
 
 }
+

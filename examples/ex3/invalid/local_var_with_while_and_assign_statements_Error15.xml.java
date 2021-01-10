@@ -10,7 +10,7 @@ class A {
 class B extends A {
 	int theVar;
 
-	int foo() {
+	public int foo() {
 		return theVar;
 	}
 
@@ -19,24 +19,24 @@ class B extends A {
 class C extends A {
 	int theVar;
 
-	int foo() {
+	public int foo() {
 		return theVar;
 	}
 
 }
 
 class D extends C {
-	int bar(int anotherVar) {
+	public int bar(int anotherVar) {
 		int theVar;
 		int max;
-		while (!((anotherVar) && (theVar))) {			{
+		while (!((anotherVar) && (theVar)))			{
 				theVar = (theVar) + (anotherVar);
 
 				max = (2) * (theVar);
 
 			}
 
-		}
+		
 		return max;
 	}
 

@@ -25,7 +25,7 @@ parser code
 	// Override default error reporting in parser
 	public void report_error(String message, Object info)
 	{
-	    System.err.print("Syntax error at line " + lexer.getLine() + " of input. Parser\n");
+	    System.err.print("Syntax error at line " + lexer.getLine() + " of input.\n");
 		System.exit(1);
 	}
 :}
@@ -54,7 +54,7 @@ scan with
 	// System.out.print("\n");
 	return s;
      } catch (java.lang.Error e) {
-         System.err.print("Syntax error at line " + lexer.getLine() + " of input. Lexer\n");
+         System.err.print("Syntax error at line " + lexer.getLine() + " of input.\n");
          System.exit(1);
          return null;
      }
@@ -96,7 +96,6 @@ nonterminal List<Expr> ActualsList;
 nonterminal List<Expr> MethodCallParamsList;
 nonterminal ArrayAccessExpr ArrayAccessExpr;
 nonterminal ArrayLengthExpr ArrayLength;
-nonterminal IdentifierExpr IdentifierExpr;
 nonterminal AstType Type;
 nonterminal VarDecl VarDecl;
 nonterminal List<VarDecl> VarDeclsList;
@@ -144,9 +143,7 @@ MethodDeclList      ::= MethodDecl:methodDecl MethodDeclList:methodDeclList     
                 |       /* empty MethodDeclList */                               {: RESULT = new LinkedList<MethodDecl>(); :};
 
 MethodDecl          ::= PUBLIC:p Type:returnType IDENTIFIER:name FormalArgListWithParenthesis:formals LCURL VarDeclsList:vardecls StatementsList:body RETURN Expr:ret SEMICOLON RCURL
-                                                                                 {: RESULT = new MethodDecl(returnType, name, formals, vardecls, body, ret, pleft); :}
-                |       Type:returnType IDENTIFIER:name FormalArgListWithParenthesis:formals LCURL VarDeclsList:vardecls StatementsList:body RETURN Expr:ret SEMICOLON RCURL
-                                                                                 {: RESULT = new MethodDecl(returnType, name, formals, vardecls, body, ret, returnTypeleft); :};
+                                                                                 {: RESULT = new MethodDecl(returnType, name, formals, vardecls, body, ret, pleft); :};
 
 Statement           ::= IDENTIFIER:lv ASSIGN Expr:expr SEMICOLON                 {: RESULT = new AssignStatement(lv, expr); :}
                 |       IF LPAREN Expr:cond RPAREN Statement:thencase ELSE Statement:elsecase
@@ -160,8 +157,6 @@ Statement           ::= IDENTIFIER:lv ASSIGN Expr:expr SEMICOLON                
 
 StatementsList      ::= Statement:statement StatementsList:statementsList        {: RESULT = statementsList; statementsList.add(0, statement); :}
                 |     /* empty StatementsList */                                 {: RESULT = new LinkedList<Statement>(); :};
-
-IdentifierExpr      ::= IDENTIFIER:id                                            {: RESULT = new IdentifierExpr(id); :};
 
 Expr                ::= Expr:e1 PLUS Expr:e2                                     {: RESULT = new AddExpr(e1, e2); :}
                 |       Expr:e1 MINUS Expr:e2                                    {: RESULT = new SubtractExpr(e1, e2); :}
@@ -194,7 +189,7 @@ VarDeclsList        ::= VarDeclsList:varDeclsList VarDecl:varDecl               
                 |       /* empty VarDeclsList */                                 {: RESULT = new LinkedList<VarDecl>(); :};
 
 ExprList            ::= Expr:e                                                   {: RESULT = new LinkedList<Expr>(); RESULT.add(e); :}
-                |       Expr:e COMMA ExprList:exprList                           {: RESULT = exprList; exprList.add(e); :};
+                |       Expr:e COMMA ExprList:exprList                           {: RESULT = exprList; exprList.add(0, e); :};
 
 MethodCallParamsList    ::= LPAREN RPAREN                                        {: RESULT = new LinkedList<Expr>(); :}
                 |       LPAREN ExprList:exprList RPAREN                          {: RESULT = exprList; :};

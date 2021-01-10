@@ -72,19 +72,14 @@ int comment_start_line;
 /* MACRO DECALARATIONS */
 DIGIT           = [0-9]
 NONZERO_DIGITS  = [1-9]
-NEWLINE         = "\n"
 LETTER          = [a-zA-Z]
-WHITESPACE      = " "
-TAB             = "\t"
-CARRIAGE        = "\r"
 SINGLE_COMMENT  = "//"
 MULTI_COMMENT_L = "/*"
 MULTI_COMMENT_R = "*/"
 UNDERSCORE      = "_"
 IDENTIFIER      = {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
-INTEGER         = {NONZERO_DIGITS}({DIGIT})*
-IGNORED         = {WHITESPACE}|{CARRIAGE}|{TAB}
-ANY_STRING      = .+
+INTEGER         = {DIGIT}|{NONZERO_DIGITS}({DIGIT})*
+WHITESPACE      = \s
 
 /***********************/
 
@@ -109,7 +104,7 @@ ANY_STRING      = .+
 "static"            { return symbol(sym.STATIC); }
 "void"              { return symbol(sym.VOID); }
 "main"              { return symbol(sym.MAIN); }
-"string"            { return symbol(sym.STRING); }
+"String"            { return symbol(sym.STRING); }
 "System.out.println" { return symbol(sym.PRINT); }
 "return"            { return symbol(sym.RETURN); }
 "true"              { return symbol(sym.TRUE); }
@@ -141,23 +136,22 @@ ANY_STRING      = .+
 "if"                { return symbol(sym.IF); }
 "while"             { return symbol(sym.WHILE); }
 "else"              { return symbol(sym.ELSE); }
-{IDENTIFIER}        { return symbol(sym.IDENTIFIER); }
+{IDENTIFIER}        { return symbol(sym.IDENTIFIER, yytext()); }
 {INTEGER}           { return symbol(sym.INTEGER, new Integer(yytext())); }
-{IGNORED}           { /* do nothing */ }
-{NEWLINE}           { /* do nothing */ }
+{WHITESPACE}+       { /* Ignore whitespace */}
 {SINGLE_COMMENT}    { yybegin(SINGLE_COMMENT); }
 {MULTI_COMMENT_L}   { comment_start_line = yyline; yybegin(MULTI_COMMENT); }
 <<EOF>>				{ return symbol(sym.EOF); }
-{ANY_STRING}        { yyerror(); /* If we reached here, the token does not match any known pattern */ }
+.                   { yyerror(); /* If we reached here, the token does not match any known pattern */ }
 }
 
 <SINGLE_COMMENT> {
-{NEWLINE}           { yybegin(YYINITIAL); }
-^{NEWLINE}         { /* do nothing */ }
+[^\n]          { /* do nothing */ }
+[\n]           { yybegin(YYINITIAL); }
 }
 
 <MULTI_COMMENT> {
 <<EOF>>				 { yyline = comment_start_line; yyerror(); /* Multi-line comment was not closed */ }
 {MULTI_COMMENT_R}    { yybegin(YYINITIAL); }
-^{MULTI_COMMENT_R}   { /* do nothing */ }
+.                    { /* do nothing */ }
 }

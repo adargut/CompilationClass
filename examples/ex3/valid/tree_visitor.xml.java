@@ -1,44 +1,45 @@
 class TreeVisitor {
 	public static void main(String[] a) {
-		System.out.println(new TV().Start());
+		System.out.println((new TV()).Start());
 	}
 }
 
 class TV {
-	int Start() {
+	public int Start() {
 		Tree root;
 		boolean ntb;
 		int nti;
 		MyVisitor v;
 		root = new Tree();
-		ntb = root.Init(16);
-		ntb = root.Print();
+		ntb = (root).Init(16);
+		ntb = (root).Print();
 		System.out.println(100000000);
-		ntb = root.Insert(8);
-		ntb = root.Insert(24);
-		ntb = root.Insert(4);
-		ntb = root.Insert(12);
-		ntb = root.Insert(20);
-		ntb = root.Insert(28);
-		ntb = root.Insert(14);
-		ntb = root.Print();
+		ntb = (root).Insert(8);
+		ntb = (root).Insert(24);
+		ntb = (root).Insert(4);
+		ntb = (root).Insert(12);
+		ntb = (root).Insert(20);
+		ntb = (root).Insert(28);
+		ntb = (root).Insert(14);
+		ntb = (root).Print();
 		System.out.println(100000000);
 		v = new MyVisitor();
 		System.out.println(50000000);
-		nti = root.accept(v);
+		nti = (root).accept(v);
 		System.out.println(100000000);
-		System.out.println(root.Search(24));
-		System.out.println(root.Search(12));
-		System.out.println(root.Search(16));
-		System.out.println(root.Search(50));
-		System.out.println(root.Search(12));
-		ntb = root.Delete(12);
-		ntb = root.Print();
-		System.out.println(root.Search(12));
+		System.out.println((root).Search(24));
+		System.out.println((root).Search(12));
+		System.out.println((root).Search(16));
+		System.out.println((root).Search(50));
+		System.out.println((root).Search(12));
+		ntb = (root).Delete(12);
+		ntb = (root).Print();
+		System.out.println((root).Search(12));
 		return 0;
 	}
 
 }
+
 class Tree {
 	Tree left;
 
@@ -52,128 +53,124 @@ class Tree {
 
 	Tree my_null;
 
-	boolean Init(int v_key) {
+	public boolean Init(int v_key) {
 		key = v_key;
 		has_left = false;
 		has_right = false;
 		return true;
 	}
 
-	boolean SetRight(Tree rn) {
+	public boolean SetRight(Tree rn) {
 		right = rn;
 		return true;
 	}
 
-	boolean SetLeft(Tree ln) {
+	public boolean SetLeft(Tree ln) {
 		left = ln;
 		return true;
 	}
 
-	Tree GetRight() {
+	public Tree GetRight() {
 		return right;
 	}
 
-	Tree GetLeft() {
+	public Tree GetLeft() {
 		return left;
 	}
 
-	int GetKey() {
+	public int GetKey() {
 		return key;
 	}
 
-	boolean SetKey(int v_key) {
+	public boolean SetKey(int v_key) {
 		key = v_key;
 		return true;
 	}
 
-	boolean GetHas_Right() {
+	public boolean GetHas_Right() {
 		return has_right;
 	}
 
-	boolean GetHas_Left() {
+	public boolean GetHas_Left() {
 		return has_left;
 	}
 
-	boolean SetHas_Left(boolean val) {
+	public boolean SetHas_Left(boolean val) {
 		has_left = val;
 		return true;
 	}
 
-	boolean SetHas_Right(boolean val) {
+	public boolean SetHas_Right(boolean val) {
 		has_right = val;
 		return true;
 	}
 
-	boolean Compare(int num1, int num2) {
+	public boolean Compare(int num1, int num2) {
 		boolean ntb;
 		int nti;
 		ntb = false;
-		nti = num2 + 1;
-		if (num1 < num2) {
+		nti = (num2) + (1);
+		if ((num1) < (num2))
 			ntb = false;
-		} else {
-			if (!(num1 < nti)) {
+		else
+			if (!((num1) < (nti)))
 				ntb = false;
-			} else {
+			else
 				ntb = true;
-			}
-		}
 		return ntb;
 	}
 
-	boolean Insert(int v_key) {
+	public boolean Insert(int v_key) {
 		Tree new_node;
 		boolean ntb;
 		Tree current_node;
 		boolean cont;
 		int key_aux;
 		new_node = new Tree();
-		ntb = new_node.Init(v_key);
+		ntb = (new_node).Init(v_key);
 		current_node = this;
 		cont = true;
 		while (cont)			{
-				key_aux = current_node.GetKey();
+				key_aux = (current_node).GetKey();
 
-				if (v_key < key_aux) {
+				if ((v_key) < (key_aux))
 					{
-						if (current_node.GetHas_Left()) {
-							current_node = current_node.GetLeft();
-						} else {
+						if ((current_node).GetHas_Left())
+							current_node = (current_node).GetLeft();
+						else
 							{
 								cont = false;
 
-								ntb = current_node.SetHas_Left(true);
+								ntb = (current_node).SetHas_Left(true);
 
-								ntb = current_node.SetLeft(new_node);
+								ntb = (current_node).SetLeft(new_node);
 
 							}
-						}
 
 					}
-				} else {
+				else
 					{
-						if (current_node.GetHas_Right()) {
-							current_node = current_node.GetRight();
-						} else {
+						if ((current_node).GetHas_Right())
+							current_node = (current_node).GetRight();
+						else
 							{
 								cont = false;
 
-								ntb = current_node.SetHas_Right(true);
+								ntb = (current_node).SetHas_Right(true);
 
-								ntb = current_node.SetRight(new_node);
+								ntb = (current_node).SetRight(new_node);
 
 							}
-						}
 
 					}
-				}
 
 			}
 
+		
 		return true;
 	}
 
-	boolean Delete(int v_key) {
+	public boolean Delete(int v_key) {
 		Tree current_node;
 		Tree parent_node;
 		boolean cont;
@@ -187,137 +184,131 @@ class Tree {
 		found = false;
 		is_root = true;
 		while (cont)			{
-				key_aux = current_node.GetKey();
+				key_aux = (current_node).GetKey();
 
-				if (v_key < key_aux) {
-					if (current_node.GetHas_Left()) {
+				if ((v_key) < (key_aux))
+					if ((current_node).GetHas_Left())
 						{
 							parent_node = current_node;
 
-							current_node = current_node.GetLeft();
+							current_node = (current_node).GetLeft();
 
 						}
-					} else {
+					else
 						cont = false;
-					}
-				} else {
-					if (key_aux < v_key) {
-						if (current_node.GetHas_Right()) {
+				else
+					if ((key_aux) < (v_key))
+						if ((current_node).GetHas_Right())
 							{
 								parent_node = current_node;
 
-								current_node = current_node.GetRight();
+								current_node = (current_node).GetRight();
 
 							}
-						} else {
+						else
 							cont = false;
-						}
-					} else {
+					else
 						{
-							if (is_root) {
-								if (!(current_node.GetHas_Right()) && !(current_node.GetHas_Left())) {
+							if (is_root)
+								if ((!((current_node).GetHas_Right())) && (!((current_node).GetHas_Left())))
 									ntb = true;
-								} else {
-									ntb = this.Remove(parent_node, current_node);
-								}
-							} else {
-								ntb = this.Remove(parent_node, current_node);
-							}
+								else
+									ntb = (this).Remove(parent_node, current_node);
+							else
+								ntb = (this).Remove(parent_node, current_node);
 
 							found = true;
 
 							cont = false;
 
 						}
-					}
-				}
 
 				is_root = false;
 
 			}
 
+		
 		return found;
 	}
 
-	boolean Remove(Tree p_node, Tree c_node) {
+	public boolean Remove(Tree p_node, Tree c_node) {
 		boolean ntb;
 		int auxkey1;
 		int auxkey2;
 		Tree t;
-		if (c_node.GetHas_Left()) {
-			ntb = this.RemoveLeft(p_node, c_node);
-		} else {
-			if (c_node.GetHas_Right()) {
-				ntb = this.RemoveRight(p_node, c_node);
-			} else {
+		if ((c_node).GetHas_Left())
+			ntb = (this).RemoveLeft(p_node, c_node);
+		else
+			if ((c_node).GetHas_Right())
+				ntb = (this).RemoveRight(p_node, c_node);
+			else
 				{
-					auxkey1 = c_node.GetKey();
+					auxkey1 = (c_node).GetKey();
 
-					t = p_node.GetLeft();
+					t = (p_node).GetLeft();
 
-					auxkey2 = t.GetKey();
+					auxkey2 = (t).GetKey();
 
-					if (this.Compare(auxkey1, auxkey2)) {
+					if ((this).Compare(auxkey1, auxkey2))
 						{
-							ntb = p_node.SetLeft(my_null);
+							ntb = (p_node).SetLeft(my_null);
 
-							ntb = p_node.SetHas_Left(false);
+							ntb = (p_node).SetHas_Left(false);
 
 						}
-					} else {
+					else
 						{
-							ntb = p_node.SetRight(my_null);
+							ntb = (p_node).SetRight(my_null);
 
-							ntb = p_node.SetHas_Right(false);
+							ntb = (p_node).SetHas_Right(false);
 
 						}
-					}
 
 				}
-			}
-		}
 		return true;
 	}
 
-	boolean RemoveRight(Tree p_node, Tree c_node) {
+	public boolean RemoveRight(Tree p_node, Tree c_node) {
 		boolean ntb;
 		Tree t;
-		while (c_node.GetHas_Right())			{
-				t = c_node.GetRight();
+		while ((c_node).GetHas_Right())			{
+				t = (c_node).GetRight();
 
-				ntb = c_node.SetKey(t.GetKey());
+				ntb = (c_node).SetKey((t).GetKey());
 
 				p_node = c_node;
 
-				c_node = c_node.GetRight();
+				c_node = (c_node).GetRight();
 
 			}
 
-		ntb = p_node.SetRight(my_null);
-		ntb = p_node.SetHas_Right(false);
+		
+		ntb = (p_node).SetRight(my_null);
+		ntb = (p_node).SetHas_Right(false);
 		return true;
 	}
 
-	boolean RemoveLeft(Tree p_node, Tree c_node) {
+	public boolean RemoveLeft(Tree p_node, Tree c_node) {
 		boolean ntb;
 		Tree t;
-		while (c_node.GetHas_Left())			{
-				t = c_node.GetLeft();
+		while ((c_node).GetHas_Left())			{
+				t = (c_node).GetLeft();
 
-				ntb = c_node.SetKey(t.GetKey());
+				ntb = (c_node).SetKey((t).GetKey());
 
 				p_node = c_node;
 
-				c_node = c_node.GetLeft();
+				c_node = (c_node).GetLeft();
 
 			}
 
-		ntb = p_node.SetLeft(my_null);
-		ntb = p_node.SetHas_Left(false);
+		
+		ntb = (p_node).SetLeft(my_null);
+		ntb = (p_node).SetHas_Left(false);
 		return true;
 	}
 
-	int Search(int v_key) {
+	public int Search(int v_key) {
 		Tree current_node;
 		int ifound;
 		boolean cont;
@@ -326,130 +317,124 @@ class Tree {
 		cont = true;
 		ifound = 0;
 		while (cont)			{
-				key_aux = current_node.GetKey();
+				key_aux = (current_node).GetKey();
 
-				if (v_key < key_aux) {
-					if (current_node.GetHas_Left()) {
-						current_node = current_node.GetLeft();
-					} else {
+				if ((v_key) < (key_aux))
+					if ((current_node).GetHas_Left())
+						current_node = (current_node).GetLeft();
+					else
 						cont = false;
-					}
-				} else {
-					if (key_aux < v_key) {
-						if (current_node.GetHas_Right()) {
-							current_node = current_node.GetRight();
-						} else {
+				else
+					if ((key_aux) < (v_key))
+						if ((current_node).GetHas_Right())
+							current_node = (current_node).GetRight();
+						else
 							cont = false;
-						}
-					} else {
+					else
 						{
 							ifound = 1;
 
 							cont = false;
 
 						}
-					}
-				}
 
 			}
 
+		
 		return ifound;
 	}
 
-	boolean Print() {
+	public boolean Print() {
 		boolean ntb;
 		Tree current_node;
 		current_node = this;
-		ntb = this.RecPrint(current_node);
+		ntb = (this).RecPrint(current_node);
 		return true;
 	}
 
-	boolean RecPrint(Tree node) {
+	public boolean RecPrint(Tree node) {
 		boolean ntb;
-		if (node.GetHas_Left()) {
+		if ((node).GetHas_Left())
 			{
-				ntb = this.RecPrint(node.GetLeft());
+				ntb = (this).RecPrint((node).GetLeft());
 
 			}
-		} else {
+		else
 			ntb = true;
-		}
-		System.out.println(node.GetKey());
-		if (node.GetHas_Right()) {
+		System.out.println((node).GetKey());
+		if ((node).GetHas_Right())
 			{
-				ntb = this.RecPrint(node.GetRight());
+				ntb = (this).RecPrint((node).GetRight());
 
 			}
-		} else {
+		else
 			ntb = true;
-		}
 		return true;
 	}
 
-	int accept(Visitor v) {
+	public int accept(Visitor v) {
 		int nti;
 		System.out.println(333);
-		nti = v.visit(this);
+		nti = (v).visit(this);
 		return 0;
 	}
 
 }
+
 class Visitor {
 	Tree l;
 
 	Tree r;
 
-	int visit(Tree n) {
+	public int visit(Tree n) {
 		int nti;
-		if (n.GetHas_Right()) {
+		if ((n).GetHas_Right())
 			{
-				r = n.GetRight();
+				r = (n).GetRight();
 
-				nti = r.accept(this);
+				nti = (r).accept(this);
 
 			}
-		} else {
+		else
 			nti = 0;
-		}
-		if (n.GetHas_Left()) {
+		if ((n).GetHas_Left())
 			{
-				l = n.GetLeft();
+				l = (n).GetLeft();
 
-				nti = l.accept(this);
+				nti = (l).accept(this);
 
 			}
-		} else {
+		else
 			nti = 0;
-		}
 		return 0;
 	}
 
 }
+
 class MyVisitor extends Visitor {
-	int visit(Tree n) {
+	public int visit(Tree n) {
 		int nti;
-		if (n.GetHas_Right()) {
+		if ((n).GetHas_Right())
 			{
-				r = n.GetRight();
+				r = (n).GetRight();
 
-				nti = r.accept(this);
+				nti = (r).accept(this);
 
 			}
-		} else {
+		else
 			nti = 0;
-		}
-		System.out.println(n.GetKey());
-		if (n.GetHas_Left()) {
+		System.out.println((n).GetKey());
+		if ((n).GetHas_Left())
 			{
-				l = n.GetLeft();
+				l = (n).GetLeft();
 
-				nti = l.accept(this);
+				nti = (l).accept(this);
 
 			}
-		} else {
+		else
 			nti = 0;
-		}
 		return 0;
 	}
 
 }
+

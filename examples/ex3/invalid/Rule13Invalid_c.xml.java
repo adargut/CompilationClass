@@ -5,7 +5,7 @@ class Main {
 }
 
 class A {
-	int test() {
+	public int test() {
 		return 1;
 	}
 
@@ -14,7 +14,7 @@ class A {
 class B extends A {
 	A theVar;
 
-	int foo() {
+	public int foo() {
 		theVar = new A();
 		return ((theVar).test()).length;
 	}

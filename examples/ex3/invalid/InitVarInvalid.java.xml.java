@@ -5,7 +5,7 @@ class Main {
 }
 
 class Simple {
-	int fun() {
+	public int fun() {
 		int x;
 		int y;
 		y = x;

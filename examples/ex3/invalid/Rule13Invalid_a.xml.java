@@ -10,7 +10,7 @@ class A {
 class B extends A {
 	int theVar;
 
-	int foo() {
+	public int foo() {
 		return (theVar).length;
 	}
 
