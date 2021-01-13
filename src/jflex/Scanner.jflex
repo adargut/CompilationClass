@@ -148,7 +148,7 @@ NL              = \r | \n | \n\r
 
 <SINGLE_COMMENT> {
 [^\n]          { /* do nothing */ }
-[\n]           { yybegin(YYINITIAL); }
+{NL}           { yybegin(YYINITIAL); }
 }
 
 <MULTI_COMMENT> {
