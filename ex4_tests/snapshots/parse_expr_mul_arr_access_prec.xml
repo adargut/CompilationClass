@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+  <mainclass>
+    <name>Main</name>
+    <argsName>args</argsName>
+    <mainStatement>
+      <sysout>
+        <arg>
+          <mult>
+            <e1>
+              <ref-id>
+                <id>a</id>
+              </ref-id>
+            </e1>
+            <e2>
+              <array-access>
+                <arrayExpr>
+                  <ref-id>
+                    <id>b</id>
+                  </ref-id>
+                </arrayExpr>
+                <indexExpr>
+                  <ref-id>
+                    <id>c</id>
+                  </ref-id>
+                </indexExpr>
+              </array-access>
+            </e2>
+          </mult>
+        </arg>
+      </sysout>
+    </mainStatement>
+  </mainclass>
+  <classdecls/>
+</program>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+  <mainclass>
+    <name>Main</name>
+    <argsName>args</argsName>
+    <mainStatement>
+      <block>
+        <statements/>
+      </block>
+    </mainStatement>
+  </mainclass>
+  <classdecls>
+    <classdecl>
+      <name>A</name>
+      <fields>
+        <field>
+          <type>
+            <int/>
+          </type>
+          <name>a</name>
+        </field>
+      </fields>
+      <methoddecls/>
+    </classdecl>
+  </classdecls>
+</program>

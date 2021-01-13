@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+  <mainclass>
+    <name>Main</name>
+    <argsName>args</argsName>
+    <mainStatement>
+      <sysout>
+        <arg>
+          <mult>
+            <e1>
+              <not>
+                <e>
+                  <ref-id>
+                    <id>a</id>
+                  </ref-id>
+                </e>
+              </not>
+            </e1>
+            <e2>
+              <ref-id>
+                <id>b</id>
+              </ref-id>
+            </e2>
+          </mult>
+        </arg>
+      </sysout>
+    </mainStatement>
+  </mainclass>
+  <classdecls/>
+</program>

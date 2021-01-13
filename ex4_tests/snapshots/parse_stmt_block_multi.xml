@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+  <mainclass>
+    <name>Main</name>
+    <argsName>args</argsName>
+    <mainStatement>
+      <block>
+        <statements>
+          <sysout>
+            <arg>
+              <int-literal>
+                <num>1</num>
+              </int-literal>
+            </arg>
+          </sysout>
+          <sysout>
+            <arg>
+              <int-literal>
+                <num>123784</num>
+              </int-literal>
+            </arg>
+          </sysout>
+        </statements>
+      </block>
+    </mainStatement>
+  </mainclass>
+  <classdecls/>
+</program>

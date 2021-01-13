@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+  <mainclass>
+    <name>Main</name>
+    <argsName>args</argsName>
+    <mainStatement>
+      <sysout>
+        <arg>
+          <call>
+            <ownerExpr>
+              <mult>
+                <e1>
+                  <int-literal>
+                    <num>1</num>
+                  </int-literal>
+                </e1>
+                <e2>
+                  <ref-id>
+                    <id>b</id>
+                  </ref-id>
+                </e2>
+              </mult>
+            </ownerExpr>
+            <methodId>f</methodId>
+            <actuals/>
+          </call>
+        </arg>
+      </sysout>
+    </mainStatement>
+  </mainclass>
+  <classdecls/>
+</program>

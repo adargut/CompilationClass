@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+  <mainclass>
+    <name>Main</name>
+    <argsName>args</argsName>
+    <mainStatement>
+      <sysout>
+        <arg>
+          <call>
+            <ownerExpr>
+              <call>
+                <ownerExpr>
+                  <ref-id>
+                    <id>x</id>
+                  </ref-id>
+                </ownerExpr>
+                <methodId>f</methodId>
+                <actuals>
+                  <actual>
+                    <int-literal>
+                      <num>1</num>
+                    </int-literal>
+                  </actual>
+                </actuals>
+              </call>
+            </ownerExpr>
+            <methodId>g</methodId>
+            <actuals>
+              <actual>
+                <int-literal>
+                  <num>2</num>
+                </int-literal>
+              </actual>
+            </actuals>
+          </call>
+        </arg>
+      </sysout>
+    </mainStatement>
+  </mainclass>
+  <classdecls/>
+</program>

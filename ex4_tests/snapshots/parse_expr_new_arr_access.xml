@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+  <mainclass>
+    <name>Main</name>
+    <argsName>args</argsName>
+    <mainStatement>
+      <sysout>
+        <arg>
+          <array-access>
+            <arrayExpr>
+              <new-int-array>
+                <lengthExpr>
+                  <int-literal>
+                    <num>7</num>
+                  </int-literal>
+                </lengthExpr>
+              </new-int-array>
+            </arrayExpr>
+            <indexExpr>
+              <int-literal>
+                <num>3</num>
+              </int-literal>
+            </indexExpr>
+          </array-access>
+        </arg>
+      </sysout>
+    </mainStatement>
+  </mainclass>
+  <classdecls/>
+</program>

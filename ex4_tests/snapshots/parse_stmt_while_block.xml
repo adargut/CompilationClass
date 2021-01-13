@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+  <mainclass>
+    <name>Main</name>
+    <argsName>args</argsName>
+    <mainStatement>
+      <while>
+        <cond>
+          <int-literal>
+            <num>1</num>
+          </int-literal>
+        </cond>
+        <body>
+          <block>
+            <statements>
+              <sysout>
+                <arg>
+                  <int-literal>
+                    <num>1</num>
+                  </int-literal>
+                </arg>
+              </sysout>
+            </statements>
+          </block>
+        </body>
+      </while>
+    </mainStatement>
+  </mainclass>
+  <classdecls/>
+</program>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<program>
+  <mainclass>
+    <name>Main</name>
+    <argsName>args</argsName>
+    <mainStatement>
+      <sysout>
+        <arg>
+          <call>
+            <ownerExpr>
+              <int-literal>
+                <num>1</num>
+              </int-literal>
+            </ownerExpr>
+            <methodId>func</methodId>
+            <actuals>
+              <actual>
+                <int-literal>
+                  <num>5</num>
+                </int-literal>
+              </actual>
+            </actuals>
+          </call>
+        </arg>
+      </sysout>
+    </mainStatement>
+  </mainclass>
+  <classdecls/>
+</program>
