@@ -152,7 +152,7 @@ NL              = \r | \n | \n\r
 }
 
 <MULTI_COMMENT> {
-<<EOF>>				 { yyline = comment_start_line; yyerror(); /* Multi-line comment was not closed */ }
+// <<EOF>>				 { yyline = comment_start_line; yyerror(); /* Multi-line comment was not closed */ }
 {MULTI_COMMENT_R}    { yybegin(YYINITIAL); }
 .                    { /* do nothing */ }
 }
