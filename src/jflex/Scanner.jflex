@@ -80,6 +80,7 @@ UNDERSCORE      = "_"
 IDENTIFIER      = {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 INTEGER         = {DIGIT}|{NONZERO_DIGITS}({DIGIT})*
 WHITESPACE      = \s
+NL              = \n | \r | \r\n
 
 /***********************/
 
@@ -141,6 +142,7 @@ WHITESPACE      = \s
 {WHITESPACE}+       { /* Ignore whitespace */}
 {SINGLE_COMMENT}    { yybegin(SINGLE_COMMENT); }
 {MULTI_COMMENT_L}   { comment_start_line = yyline; yybegin(MULTI_COMMENT); }
+{NL}                { yyline++; }
 <<EOF>>				{ return symbol(sym.EOF); }
 .                   { yyerror(); /* If we reached here, the token does not match any known pattern */ }
 }
