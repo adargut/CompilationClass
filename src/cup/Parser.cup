@@ -110,11 +110,13 @@ nonterminal List<ClassDecl> ClassDeclsList;
 /***********************/
 
 precedence nonassoc ASSIGN;
-precedence nonassoc AND;
+precedence left AND;
 precedence left LT;
 precedence left PLUS, MINUS;
 precedence left MULT;
+precedence left LBRACKET, LPAREN;
 precedence right NOT, NEW;
+precedence right LBRACKET, LPAREN;
 precedence left DOT;
 
 /************************/
