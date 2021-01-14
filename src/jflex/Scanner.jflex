@@ -43,8 +43,7 @@ int comment_start_line;
 /****************/
 /* DECLARATIONS */
 /****************/
-%state SINGLE_COMMENT
-%state MULTI_COMMENT
+
 
 /*****************************************************************************/
 /* Code between %{ and %}, both of which must be at the beginning of a line, */
@@ -73,15 +72,14 @@ int comment_start_line;
 DIGIT           = [0-9]
 NONZERO_DIGITS  = [1-9]
 LETTER          = [a-zA-Z]
-SINGLE_COMMENT  = "//"
-MULTI_COMMENT_L = "/*"
-MULTI_COMMENT_R = "*/"
 UNDERSCORE      = "_"
 IDENTIFIER      = {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 INTEGER         = {DIGIT}|{NONZERO_DIGITS}({DIGIT})*
+LINE_TERMINATOR = [\r|\n|\r\n]
+INPUT_CHARACTER = [^\r\n]
 WHITESPACE      = \s
-NL              = \r | \n | \n\r
-
+MULTI_COMMENT = "/*" ~ "*/"
+SINGLE_COMMENT = "//"{INPUT_CHARACTER}*{LINE_TERMINATOR}?
 /***********************/
 
 /******************************/
@@ -140,19 +138,8 @@ NL              = \r | \n | \n\r
 {IDENTIFIER}        { return symbol(sym.IDENTIFIER, yytext()); }
 {INTEGER}           { return symbol(sym.INTEGER, new Integer(yytext())); }
 {WHITESPACE}+       { /* Ignore whitespace */}
-{SINGLE_COMMENT}    { yybegin(SINGLE_COMMENT); }
-{MULTI_COMMENT_L}   { comment_start_line = yyline; yybegin(MULTI_COMMENT); }
+{SINGLE_COMMENT}    { /* Ignore comment */ }
+{MULTI_COMMENT}     { /* Ignore comment */ }
 <<EOF>>				{ return symbol(sym.EOF); }
 .                   { yyerror(); /* If we reached here, the token does not match any known pattern */ }
-}
-
-<SINGLE_COMMENT> {
-[^\n]                 { /* do nothing */ }
-\n | \r | \r\n | \n\r { yybegin(YYINITIAL); }
-}
-
-<MULTI_COMMENT> {
-// <<EOF>>				 { yyline = comment_start_line; yyerror(); /* Multi-line comment was not closed */ }
-{MULTI_COMMENT_R}    { yybegin(YYINITIAL); }
-.                    { /* do nothing */ }
 }
